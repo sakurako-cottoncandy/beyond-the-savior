@@ -6,6 +6,12 @@
     python src/simulate.py --condition B
     python src/simulate.py --condition C
 
+LLMの出力は毎回ぶれるため、同じ条件を複数回走らせて平均を取れるようにしています。
+    python src/simulate.py --condition A --runs 5
+
+--runs を付けると data/log_A_run1.json 〜 log_A_run5.json が作られます。
+（--runs を省略した場合は従来どおり data/log_A.json に1回だけ保存します）
+
 APIキー無しで動作を確認したいときは --mock を付けてください（ダミー会話が生成されます）。
 """
 
@@ -109,18 +115,36 @@ def main():
     parser.add_argument("--condition", choices=["A", "B", "C"], required=True)
     parser.add_argument("--rounds-per-phase", type=int, default=3)
     parser.add_argument("--mock", action="store_true", help="APIを呼ばずダミー会話で動作確認する")
+    parser.add_argument(
+        "--runs",
+        type=int,
+        default=None,
+        help="同じ条件を何回繰り返すか（指定するとlog_A_run1.json…の形で保存）",
+    )
     parser.add_argument("--output-dir", default=os.path.join(os.path.dirname(__file__), "..", "data"))
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
 
-    transcript = run_simulation(args.condition, args.rounds_per_phase, args.mock)
+    # --runs 未指定なら従来どおり1回だけ log_{条件}.json に保存する
+    total_runs = args.runs if args.runs else 1
 
-    output_path = os.path.join(args.output_dir, f"log_{args.condition}.json")
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(transcript, f, ensure_ascii=False, indent=2)
+    for run_index in range(1, total_runs + 1):
+        if args.runs:
+            print(f"\n########## 条件{args.condition} / {run_index}回目（全{total_runs}回） ##########")
 
-    print(f"\n条件{args.condition}の会話ログを保存しました: {output_path}")
+        transcript = run_simulation(args.condition, args.rounds_per_phase, args.mock)
+
+        if args.runs:
+            filename = f"log_{args.condition}_run{run_index}.json"
+        else:
+            filename = f"log_{args.condition}.json"
+        output_path = os.path.join(args.output_dir, filename)
+
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(transcript, f, ensure_ascii=False, indent=2)
+
+        print(f"\n条件{args.condition}の会話ログを保存しました: {output_path}")
 
 
 if __name__ == "__main__":

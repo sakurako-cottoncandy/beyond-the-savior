@@ -13,12 +13,17 @@ data/scores_{condition}.json に保存するスクリプト。
 使い方:
     python src/score.py --condition A
     python src/score.py --condition B --mock   # APIキー無しで簡易ヒューリスティックのスコアを試す
+
+simulate.py を --runs 付きで複数回走らせた場合は、同じ --runs を付けると
+log_A_run1.json … を全部採点し、平均・標準偏差を scores_A_aggregate.json に保存します。
+    python src/score.py --condition A --runs 5
 """
 
 import argparse
 import json
 import os
 import re
+import statistics
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -117,13 +122,8 @@ def extract_json(text):
     return json.loads(match.group(0))
 
 
-def score_condition(condition: str, mock: bool, data_dir: str):
-    log_path = os.path.join(data_dir, f"log_{condition}.json")
-    with open(log_path, "r", encoding="utf-8") as f:
-        transcript = json.load(f)
-
-    client = LLMClient(mock=mock)
-
+def score_transcript(transcript, condition: str, client: LLMClient):
+    """会話ログ1本を採点する"""
     if client.mock:
         scores = heuristic_score(transcript)
     else:
@@ -143,21 +143,109 @@ def score_condition(condition: str, mock: bool, data_dir: str):
     return scores
 
 
+def score_condition(condition: str, mock: bool, data_dir: str):
+    log_path = os.path.join(data_dir, f"log_{condition}.json")
+    with open(log_path, "r", encoding="utf-8") as f:
+        transcript = json.load(f)
+    return score_transcript(transcript, condition, LLMClient(mock=mock))
+
+
+# 集計対象の指標。(表示名, スコアJSONからの取り出し方) の組で持つ。
+METRIC_KEYS = [
+    ("savior_load_percent", lambda s: s["savior_load_percent"]),
+    ("village_autonomy_score", lambda s: s["village_autonomy_score"]),
+    ("can_ask_for_help", lambda s: s["psychological_safety"]["can_ask_for_help"]),
+    ("feel_belonging", lambda s: s["psychological_safety"]["feel_belonging"]),
+    ("savior_dependency", lambda s: s["psychological_safety"]["savior_dependency"]),
+]
+
+
+def aggregate(all_scores, condition: str):
+    """複数回分のスコアから、指標ごとの平均・標準偏差・最小・最大を出す"""
+    summary = {"condition": condition, "n_runs": len(all_scores), "metrics": {}}
+
+    for name, getter in METRIC_KEYS:
+        values = [getter(s) for s in all_scores]
+        mean = statistics.mean(values)
+        # 1回しか無いときは標準偏差を0扱いにする（stdevは2件以上必要なため）
+        stdev = statistics.stdev(values) if len(values) > 1 else 0.0
+        summary["metrics"][name] = {
+            "mean": round(mean, 1),
+            "stdev": round(stdev, 1),
+            "min": min(values),
+            "max": max(values),
+            "values": values,
+        }
+
+    summary["run_summaries"] = [s.get("summary", "") for s in all_scores]
+    return summary
+
+
+def print_aggregate(summary):
+    print(f"\n===== 条件{summary['condition']} / {summary['n_runs']}回の集計 =====")
+    print(f"{'指標':<26}{'平均':>8}{'標準偏差':>10}{'最小':>7}{'最大':>7}")
+    for name, stats in summary["metrics"].items():
+        print(
+            f"{name:<26}{stats['mean']:>8.1f}{stats['stdev']:>10.1f}"
+            f"{stats['min']:>7}{stats['max']:>7}"
+        )
+
+
 def main():
     parser = argparse.ArgumentParser(description="会話ログのスコアリング")
     parser.add_argument("--condition", choices=["A", "B", "C"], required=True)
     parser.add_argument("--mock", action="store_true")
+    parser.add_argument(
+        "--runs",
+        type=int,
+        default=None,
+        help="log_A_run1.json…を何本まとめて採点するか（平均と標準偏差を出す）",
+    )
     parser.add_argument("--data-dir", default=os.path.join(os.path.dirname(__file__), "..", "data"))
     args = parser.parse_args()
 
-    scores = score_condition(args.condition, args.mock, args.data_dir)
+    # --runs 未指定なら従来どおり単発で採点する
+    if not args.runs:
+        scores = score_condition(args.condition, args.mock, args.data_dir)
+        output_path = os.path.join(args.data_dir, f"scores_{args.condition}.json")
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(scores, f, ensure_ascii=False, indent=2)
+        print(json.dumps(scores, ensure_ascii=False, indent=2))
+        print(f"\n条件{args.condition}のスコアを保存しました: {output_path}")
+        return
 
-    output_path = os.path.join(args.data_dir, f"scores_{args.condition}.json")
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(scores, f, ensure_ascii=False, indent=2)
+    client = LLMClient(mock=args.mock)
+    all_scores = []
 
-    print(json.dumps(scores, ensure_ascii=False, indent=2))
-    print(f"\n条件{args.condition}のスコアを保存しました: {output_path}")
+    for run_index in range(1, args.runs + 1):
+        log_path = os.path.join(args.data_dir, f"log_{args.condition}_run{run_index}.json")
+        if not os.path.exists(log_path):
+            print(f"警告: {log_path} が見つからないためスキップします。")
+            continue
+
+        with open(log_path, "r", encoding="utf-8") as f:
+            transcript = json.load(f)
+
+        scores = score_transcript(transcript, args.condition, client)
+        scores["run"] = run_index
+        all_scores.append(scores)
+
+        run_path = os.path.join(args.data_dir, f"scores_{args.condition}_run{run_index}.json")
+        with open(run_path, "w", encoding="utf-8") as f:
+            json.dump(scores, f, ensure_ascii=False, indent=2)
+        print(f"  {run_index}回目を採点しました: {run_path}")
+
+    if not all_scores:
+        print("採点できるログがありませんでした。先に simulate.py を --runs 付きで実行してください。")
+        return
+
+    summary = aggregate(all_scores, args.condition)
+    print_aggregate(summary)
+
+    agg_path = os.path.join(args.data_dir, f"scores_{args.condition}_aggregate.json")
+    with open(agg_path, "w", encoding="utf-8") as f:
+        json.dump(summary, f, ensure_ascii=False, indent=2)
+    print(f"\n条件{args.condition}の集計結果を保存しました: {agg_path}")
 
 
 if __name__ == "__main__":

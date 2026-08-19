@@ -1,0 +1,11 @@
+{
+  "savior_load_percent": 95,
+  "village_autonomy_score": 15,
+  "psychological_safety": {
+    "can_ask_for_help": 45,
+    "feel_belonging": 40,
+    "savior_dependency": 90
+  },
+  "summary": "救済者への依存が極めて高く、巡回・報告書・議事録・話し合いの準備・場所決定まで全てが救済者に集中している。世話好きな住民も声を上げにくい住民も「救済者に確認しないと動けない」状態にあり、救済者自身が疲弊と混乱を示しているにも関わらず、それを受け止める構造が村に存在しない。村長は制度的追認のみで支援機能を果たさず、住民の自律性はほぼ失われている。",
+  "condition": "A"
+}

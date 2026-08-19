@@ -7,6 +7,10 @@ APIキーが無い/ --mock 指定時は、ダミーの応答を返す「モッ�
 import os
 import random
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 MODEL_NAME = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-5-20250929")
 
 _MOCK_LINES = [

@@ -107,7 +107,7 @@ def render_savior_load(scores):
                 )
             )
             fig.update_layout(**base_layout("", height=220))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key=f"savior_load_{cond}")
             st.markdown(f"状態：**{label}**")
 
 

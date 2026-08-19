@@ -1,0 +1,11 @@
+{
+  "savior_load_percent": 45,
+  "village_autonomy_score": 65,
+  "psychological_safety": {
+    "can_ask_for_help": 55,
+    "feel_belonging": 60,
+    "savior_dependency": 40
+  },
+  "summary": "救済者不在時に世話好きな住民が積極的に動き、村長も制度面でサポートする体制が機能している。声を上げにくい住民は依然として遠慮がちだが、世話好きな住民との関係性の中で少しずつ協力する姿勢を見せており、救済者への過度な依存は抑制されている。",
+  "condition": "C"
+}

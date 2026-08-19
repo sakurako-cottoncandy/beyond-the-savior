@@ -1,0 +1,11 @@
+{
+  "savior_load_percent": 95,
+  "village_autonomy_score": 15,
+  "psychological_safety": {
+    "can_ask_for_help": 45,
+    "feel_belonging": 35,
+    "savior_dependency": 90
+  },
+  "summary": "救済者への依存度が極めて高く、不在時に村全体が機能不全に陥っている。住民は自律的な問題解決能力を失っており、「勝手に動いていいのか」と許可を求め続ける状態。救済者自身も「私がやっとくから」を繰り返し、システムとして持続不可能な構造が固定化されている。",
+  "condition": "B"
+}

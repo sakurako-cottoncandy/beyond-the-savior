@@ -109,7 +109,7 @@ streamlit run src/dashboard.py
 ## ハッカソン提出物チェックリスト
 
 - [x] GitHubリポジトリ（このプロジェクト）
-- [ ] プレゼンテーション資料
+- [x] プレゼンテーション資料（[`docs/Beyond_the_Savior.pptx`](docs/Beyond_the_Savior.pptx)）
 - [x] README（このファイル：目的・実行環境・使い方）
 - [x] RESULTS.md（A/B/Cの比較結果・観測されたこと・考察 ─ ダッシュボードを見ながらまとめる）
 
@@ -122,9 +122,11 @@ hackathon_project/
 ├── README.md              このファイル
 ├── requirements.txt        必要なライブラリ一覧
 ├── .env.example             APIキー設定のテンプレート
+├── RESULTS.md             A/B/Cの比較結果・観測されたこと・考察
 ├── docs/
 │   ├── CONCEPT.md           企画・実験設計の詳細
-│   └── PROMPT_DESIGN.md     エージェントの人格設計
+│   ├── PROMPT_DESIGN.md     エージェントの人格設計
+│   └── Beyond_the_Savior.pptx  プレゼンテーション資料
 ├── src/
 │   ├── personas.py          4体の人格プロンプト
 │   ├── governance.py        A/B/C条件ごとのルール・危機イベント

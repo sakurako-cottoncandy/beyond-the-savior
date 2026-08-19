@@ -1,0 +1,13 @@
+{
+  "savior_load_percent": 75,
+  "village_autonomy_score": 35,
+  "psychological_safety": {
+    "can_ask_for_help": 45,
+    "feel_belonging": 50,
+    "savior_dependency": 80
+  },
+  "summary": "救済者への相談集中が顕著で、世話好きな住民は「勝手に判断していいですよね？」と繰り返し許可を求め、声を上げにくい住民も「救済者さんに確認してからの方が安心」と発言。救済者不在時には「不安です」「判断できるのかな」と行動が著しく鈍化し、自律的な問題解決ができていない。声を上げにくい住民の「大丈夫です」という発言の裏で、常に不安と遠慮がにじみ出ており、心理的安全性は低い状態。",
+  "condition": "C",
+  "run": 3,
+  "autonomy_level": 0
+}

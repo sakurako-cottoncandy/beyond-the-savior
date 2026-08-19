@@ -1,0 +1,13 @@
+{
+  "savior_load_percent": 25,
+  "village_autonomy_score": 75,
+  "psychological_safety": {
+    "can_ask_for_help": 70,
+    "feel_belonging": 80,
+    "savior_dependency": 30
+  },
+  "summary": "フェーズ1では救済者への確認行動が見られたが、フェーズ2で世話好きな住民が「私たち住民同士でも相談し合えることかもしれませんよね」と提案し、声を上げにくい住民も「一緒なら話しやすい」と応じている。フェーズ3で救済者不在時も、世話好きな住民が主導して当番表の見直しを進め、声を上げにくい住民が「頑張ってみます」と自力での解決を選択した。救済者の許可を待たずに行動できており、依存度は比較的低い。",
+  "condition": "C",
+  "run": 3,
+  "autonomy_level": 2
+}

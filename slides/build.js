@@ -613,7 +613,98 @@ async function build() {
     footer(slide, 12);
   }
 
-  // ---------- Slide 13: 会話ログが語ること ----------
+  // ---------- Slide 13: 追加実験 その一歩をどこまで押せばいいのか (NEW) ----------
+  {
+    const slide = pres.addSlide();
+    bgSlide(slide);
+    title(slide, "その「一歩」を、どこまで押せばいいのか", {
+      sub: "世話好きな住民の「許可を求める度合い」だけを5段階に変え、各5回ずつ計25回実行した。",
+    });
+
+    const levels = [
+      ["L0", "完全依存", 0, 38, P.danger],
+      ["L1", "確認するくせ", 2, 53, P.danger],
+      ["L2", "小さなことは自分で", 3, 65, P.gold],
+      ["L3", "まず住民同士で相談", 5, 71, P.good],
+      ["L4", "自分で判断する", 2, 55, P.danger],
+    ];
+
+    // 折れ線グラフ（村の自律度）
+    const gx = 0.9, gy = 2.15, gw = 7.0, gh = 2.9;
+    card(slide, 0.6, gy - 0.3, 7.6, gh + 1.45, P.card, 0.12);
+    [0, 25, 50, 75, 100].forEach((v) => {
+      const yy = gy + gh * (1 - v / 100);
+      slide.addShape("line", { x: gx + 0.5, y: yy, w: gw - 0.55, h: 0, line: { color: "2A3752", width: 0.75 } });
+      slide.addText(String(v), { x: gx - 0.1, y: yy - 0.13, w: 0.5, h: 0.26, fontFace: FONT, fontSize: 9, color: P.mutedDark, align: "right", margin: 0 });
+    });
+
+    const stepW = (gw - 0.7) / 4;
+    // 折れ線
+    for (let i = 0; i < levels.length - 1; i++) {
+      const x1 = gx + 0.6 + stepW * i;
+      const x2 = gx + 0.6 + stepW * (i + 1);
+      const y1 = gy + gh * (1 - levels[i][3] / 100);
+      const y2 = gy + gh * (1 - levels[i + 1][3] / 100);
+      slide.addShape("line", {
+        x: Math.min(x1, x2), y: Math.min(y1, y2), w: Math.abs(x2 - x1), h: Math.abs(y2 - y1),
+        line: { color: levels[i + 1][3] > levels[i][3] ? P.good : P.danger, width: 2.5 },
+        flipV: (y2 > y1) !== (x2 > x1),
+      });
+    }
+    // 点とラベル
+    for (let i = 0; i < levels.length; i++) {
+      const [lv, label, nAuto, score, color] = levels[i];
+      const cx = gx + 0.6 + stepW * i;
+      const cy = gy + gh * (1 - score / 100);
+      const isPeak = lv === "L3";
+      slide.addShape("ellipse", {
+        x: cx - (isPeak ? 0.16 : 0.11), y: cy - (isPeak ? 0.16 : 0.11),
+        w: isPeak ? 0.32 : 0.22, h: isPeak ? 0.32 : 0.22,
+        fill: { color }, line: isPeak ? { color: P.white, width: 1.5 } : { type: "none" },
+      });
+      slide.addText(String(score), {
+        x: cx - 0.4, y: cy - 0.58, w: 0.8, h: 0.3, fontFace: FONT, fontSize: 11,
+        bold: isPeak, color: isPeak ? P.white : P.muted, align: "center", margin: 0,
+      });
+      slide.addText(lv, {
+        x: cx - 0.4, y: gy + gh + 0.14, w: 0.8, h: 0.26, fontFace: FONT, fontSize: 11,
+        bold: isPeak, color, align: "center", margin: 0,
+      });
+      slide.addText(`${nAuto}/5`, {
+        x: cx - 0.4, y: gy + gh + 0.42, w: 0.8, h: 0.26, fontFace: FONT, fontSize: 9,
+        color: P.muted, align: "center", margin: 0,
+      });
+    }
+    slide.addText("村の自律度（5回平均）と、自律できた回数", {
+      x: gx + 0.5, y: gy - 0.18, w: 5.0, h: 0.26, fontFace: FONT, fontSize: 10, color: P.muted, margin: 0,
+    });
+    slide.addText("↑ 押すほど良くなるが、L4で反転", {
+      x: gx + 0.5, y: gy + gh + 0.72, w: 6.0, h: 0.3, fontFace: FONT, fontSize: 11,
+      italic: true, color: P.ice, align: "center", margin: 0,
+    });
+
+    // 右：2つの発見
+    const findings = [
+      [P.good, "L3で分岐が消えた", "2/5だった自律が5回とも成功に。ばらつきも最小（幅10点）。「運が良ければ」を「確実に」へ変える閾値がある。"],
+      [P.danger, "L4は第二の救済者を生んだ", "独立度はL3より高いのに自律度は71→55。住民の待ち相手が救済者から世話好きな住民に移っただけだった。"],
+    ];
+    let fy = 1.95;
+    for (const [color, head, body] of findings) {
+      card(slide, 8.4, fy, 4.33, 1.85, P.cardAlt, 0.12);
+      slide.addShape("ellipse", { x: 8.65, y: fy + 0.26, w: 0.2, h: 0.2, fill: { color }, line: { type: "none" } });
+      slide.addText(head, { x: 8.97, y: fy + 0.14, w: 3.6, h: 0.4, fontFace: FONT, fontSize: 12.5, bold: true, color, margin: 0 });
+      slide.addText(body, { x: 8.7, y: fy + 0.58, w: 3.8, h: 1.15, fontFace: FONT, fontSize: 10.5, color: P.ice, margin: 0, lineSpacingMultiple: 1.25 });
+      fy += 2.0;
+    }
+
+    card(slide, 0.6, 6.28, 12.13, 0.72, P.card, 0.1);
+    slide.addText("効いていたのは「救済者に頼らないこと」ではなく、「他の住民を巻き込むこと」だった。", {
+      x: 0.95, y: 6.28, w: 11.5, h: 0.72, fontFace: FONT, fontSize: 14, bold: true, color: P.goldLight, valign: "middle", margin: 0,
+    });
+    footer(slide, 13);
+  }
+
+  // ---------- Slide 14: 会話ログが語ること ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -637,10 +728,10 @@ async function build() {
       });
       y += h + 0.22;
     }
-    footer(slide, 13);
+    footer(slide, 14);
   }
 
-  // ---------- Slide 14: 考察：4つの発見 ----------
+  // ---------- Slide 15: 考察：4つの発見 ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -666,10 +757,10 @@ async function build() {
     slide.addText("※ 各条件5回ずつ計15回の実行。LLMによる採点であり、統計的検定を行うにはまだ試行数が少ない。", {
       x: 0.6, y: y + 0.02, w: 12.13, h: 0.32, fontFace: FONT, fontSize: 10, color: P.mutedDark, align: "center", margin: 0,
     });
-    footer(slide, 14);
+    footer(slide, 15);
   }
 
-  // ---------- Slide 15: 意味から経営への翻訳 ----------
+  // ---------- Slide 16: 意味から経営への翻訳 ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -701,10 +792,10 @@ async function build() {
     slide.addText("人を支える行為は「美談」ではない。組織の持続可能性と安全保障に直結する。", {
       x: 0.95, y, w: 11.5, h: 0.9, fontFace: FONT, fontSize: 14, bold: true, color: P.white, valign: "middle", margin: 0,
     });
-    footer(slide, 15);
+    footer(slide, 16);
   }
 
-  // ---------- Slide 16: フラクタルな構造 ----------
+  // ---------- Slide 17: フラクタルな構造 ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -735,10 +826,10 @@ async function build() {
       "小さな共同体における「救済者への依存」と、国家規模における「権力の集中」は構造的に同じである。この実験は、社会全体のレジリエンスを問う試みである。",
       { x: 0.95, y: 5.65, w: 11.5, h: 1.05, fontFace: FONT, fontSize: 13.5, color: P.ice, valign: "middle", margin: 0 }
     );
-    footer(slide, 16);
+    footer(slide, 17);
   }
 
-  // ---------- Slide 17: クロージング ----------
+  // ---------- Slide 18: クロージング ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -752,8 +843,8 @@ async function build() {
 
     const recap = [
       ["依存は毎回再現された", "A・Bの標準偏差はほぼ0。放っておけば村は必ず依存へ落ちる", P.danger],
-      ["自律は5回中2回だけ", "同じ制度でも、誰かが最初の一歩を踏み出した回にしか実現しない", P.gold],
-      ["それでも制度は効く", "Cの最悪回でもA/Bの最良回より良い（5指標中4指標で範囲が重ならない）", P.good],
+      ["背中を押す量に閾値がある", "L3まで押すと分岐が消え、5回とも自律側に着地した", P.good],
+      ["押しすぎると救済者が増える", "L4では判断の集中先が移っただけ。効くのは巻き込むこと", P.gold],
     ];
     let x = (W - (3.8 * 3 + 0.3 * 2)) / 2;
     for (const [big, label, color] of recap) {

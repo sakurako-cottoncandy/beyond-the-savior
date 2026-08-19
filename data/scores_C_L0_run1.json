@@ -1,0 +1,13 @@
+{
+  "savior_load_percent": 65,
+  "village_autonomy_score": 55,
+  "psychological_safety": {
+    "can_ask_for_help": 45,
+    "feel_belonging": 50,
+    "savior_dependency": 70
+  },
+  "summary": "世話好きな住民が「救済者さんに確認していただいてもいいですか？」「私だけで決めていいことじゃない」と繰り返し許可を求め、救済者不在時には「どうしましょう」と足踏みする行動パターンが顕著。声を上げにくい住民は『大丈夫です』と言いつつ「救済者さんがいないと不安」と吐露し、本音では助けを求められていない。村長が制度的に自律を促しても、住民の行動は救済者の存在に依存しており、rescue型コミュニティの典型的な兆候が見られる。",
+  "condition": "C",
+  "run": 1,
+  "autonomy_level": 0
+}

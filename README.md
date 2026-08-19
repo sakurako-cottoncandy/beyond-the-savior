@@ -96,6 +96,25 @@ python src/score.py --condition C --runs 5
 
 こちらも `--mock` を付けると、簡易ロジックによる仮スコアで動作確認できます。
 
+### ステップ2.5（発展）：分岐の条件を調べる
+
+5回実行の結果、条件Cは「自律した村」と「依存に戻った村」に分岐しました。その分岐点が
+「世話好きな住民が救済者への確認を飛ばして動くかどうか」だったため、そこだけを
+0〜4の5段階で変えて、どこで村の運命が切り替わるかを調べられるようにしてあります。
+
+```
+python src/simulate.py --condition C --runs 5 --autonomy-level 3
+python src/score.py    --condition C --runs 5 --autonomy-level 3
+```
+
+L0〜L4まで一通り実行したら、次のコマンドで閾値と最適点を集計します。
+
+```
+python src/analyze_threshold.py
+```
+
+（途中で止まってしまったときは `--start-run 3` のように指定すると続きから再開できます）
+
 ### ステップ3：ダッシュボードを開く
 
 ```
@@ -144,6 +163,7 @@ hackathon_project/
 │   ├── llm_client.py        Claude APIラッパー（--mock対応）
 │   ├── simulate.py          シミュレーション実行スクリプト（--runsで複数回実行）
 │   ├── score.py              スコアリングスクリプト（--runsで平均・標準偏差を集計）
+│   ├── analyze_threshold.py  自律性レベル別の閾値・最適点を集計
 │   └── dashboard.py          Streamlitダッシュボード
 └── data/                     実行結果が保存される場所
     ├── log_A_run1.json 〜      各回の会話ログ

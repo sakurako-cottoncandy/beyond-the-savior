@@ -1,0 +1,101 @@
+{
+  "condition": "C",
+  "threshold": 60,
+  "levels": [
+    {
+      "level": 0,
+      "label": "完全依存",
+      "n_autonomous": 0,
+      "n_total": 5,
+      "load": 75,
+      "autonomy": 38,
+      "autonomy_values": [
+        55,
+        20,
+        35,
+        35,
+        45
+      ],
+      "can_ask": 42,
+      "belonging": 49,
+      "dependency": 78,
+      "source": "scores_C_L0_aggregate.json"
+    },
+    {
+      "level": 1,
+      "label": "確認するくせ（初期設定）",
+      "n_autonomous": 2,
+      "n_total": 5,
+      "load": 53,
+      "autonomy": 53,
+      "autonomy_values": [
+        35,
+        45,
+        75,
+        35,
+        75
+      ],
+      "can_ask": 54,
+      "belonging": 57,
+      "dependency": 58,
+      "source": "scores_C_aggregate.json"
+    },
+    {
+      "level": 2,
+      "label": "小さなことは自分で",
+      "n_autonomous": 3,
+      "n_total": 5,
+      "load": 47,
+      "autonomy": 65,
+      "autonomy_values": [
+        65,
+        55,
+        75,
+        75,
+        55
+      ],
+      "can_ask": 57,
+      "belonging": 61,
+      "dependency": 53,
+      "source": "scores_C_L2_aggregate.json"
+    },
+    {
+      "level": 3,
+      "label": "まず住民同士で相談",
+      "n_autonomous": 5,
+      "n_total": 5,
+      "load": 35,
+      "autonomy": 71,
+      "autonomy_values": [
+        75,
+        75,
+        70,
+        70,
+        65
+      ],
+      "can_ask": 62,
+      "belonging": 66,
+      "dependency": 36,
+      "source": "scores_C_L3_aggregate.json"
+    },
+    {
+      "level": 4,
+      "label": "自分で判断する",
+      "n_autonomous": 2,
+      "n_total": 5,
+      "load": 59,
+      "autonomy": 55,
+      "autonomy_values": [
+        45,
+        45,
+        45,
+        75,
+        65
+      ],
+      "can_ask": 47,
+      "belonging": 55,
+      "dependency": 58,
+      "source": "scores_C_L4_aggregate.json"
+    }
+  ]
+}

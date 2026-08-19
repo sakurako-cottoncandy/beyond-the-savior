@@ -201,8 +201,16 @@ def main():
         default=None,
         help="log_A_run1.json…を何本まとめて採点するか（平均と標準偏差を出す）",
     )
+    parser.add_argument(
+        "--autonomy-level",
+        type=int,
+        default=None,
+        help="simulate.pyで--autonomy-levelを指定した場合、同じ値を渡す（log_C_L3_run1.jsonを読む）",
+    )
     parser.add_argument("--data-dir", default=os.path.join(os.path.dirname(__file__), "..", "data"))
     args = parser.parse_args()
+
+    level_tag = f"_L{args.autonomy_level}" if args.autonomy_level is not None else ""
 
     # --runs 未指定なら従来どおり単発で採点する
     if not args.runs:
@@ -218,7 +226,7 @@ def main():
     all_scores = []
 
     for run_index in range(1, args.runs + 1):
-        log_path = os.path.join(args.data_dir, f"log_{args.condition}_run{run_index}.json")
+        log_path = os.path.join(args.data_dir, f"log_{args.condition}{level_tag}_run{run_index}.json")
         if not os.path.exists(log_path):
             print(f"警告: {log_path} が見つからないためスキップします。")
             continue
@@ -228,9 +236,11 @@ def main():
 
         scores = score_transcript(transcript, args.condition, client)
         scores["run"] = run_index
+        if args.autonomy_level is not None:
+            scores["autonomy_level"] = args.autonomy_level
         all_scores.append(scores)
 
-        run_path = os.path.join(args.data_dir, f"scores_{args.condition}_run{run_index}.json")
+        run_path = os.path.join(args.data_dir, f"scores_{args.condition}{level_tag}_run{run_index}.json")
         with open(run_path, "w", encoding="utf-8") as f:
             json.dump(scores, f, ensure_ascii=False, indent=2)
         print(f"  {run_index}回目を採点しました: {run_path}")
@@ -240,9 +250,11 @@ def main():
         return
 
     summary = aggregate(all_scores, args.condition)
+    if args.autonomy_level is not None:
+        summary["autonomy_level"] = args.autonomy_level
     print_aggregate(summary)
 
-    agg_path = os.path.join(args.data_dir, f"scores_{args.condition}_aggregate.json")
+    agg_path = os.path.join(args.data_dir, f"scores_{args.condition}{level_tag}_aggregate.json")
     with open(agg_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
     print(f"\n条件{args.condition}の集計結果を保存しました: {agg_path}")

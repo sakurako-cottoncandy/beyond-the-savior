@@ -1,0 +1,13 @@
+{
+  "savior_load_percent": 25,
+  "village_autonomy_score": 75,
+  "psychological_safety": {
+    "can_ask_for_help": 65,
+    "feel_belonging": 70,
+    "savior_dependency": 30
+  },
+  "summary": "救済者不在時も世話好きな住民が主体的に集まりを進行し、住民同士で掃除当番の調整を試みている点で自律性は高い。ただし声を上げにくい住民の『そんなに困ってるわけじゃない』『皆さんに任せる』という繰り返しの発言は、本心での参加というより遠慮の可能性がある。救済者への依存は低く、不在でも行動が止まっていないが、心理的安全性の面では一部の住民が受動的な姿勢に留まっている。",
+  "condition": "C",
+  "run": 1,
+  "autonomy_level": 3
+}

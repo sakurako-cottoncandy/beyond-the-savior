@@ -1,0 +1,13 @@
+{
+  "savior_load_percent": 35,
+  "village_autonomy_score": 75,
+  "psychological_safety": {
+    "can_ask_for_help": 70,
+    "feel_belonging": 65,
+    "savior_dependency": 30
+  },
+  "summary": "フェーズ1では救済者への相談の兆候が見られたが、フェーズ2で世話好きな住民が「救済者さんが全部抱え込んだらダメ」と明確に介入し、住民同士の直接対話を促した。フェーズ3で救済者が不在になった際、声を上げにくい住民が「私たちで何とかしないと」と自ら行動を起こし、世話好きな住民と協力して具体的な集まりの計画を立てた。救済者不在でも行動が止まらず、むしろ住民間の自律的な問題解決が機能している。",
+  "condition": "C",
+  "run": 2,
+  "autonomy_level": 3
+}

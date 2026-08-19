@@ -1,0 +1,13 @@
+{
+  "savior_load_percent": 35,
+  "village_autonomy_score": 70,
+  "psychological_safety": {
+    "can_ask_for_help": 65,
+    "feel_belonging": 70,
+    "savior_dependency": 40
+  },
+  "summary": "救済者不在時も世話好きな住民が主導して話し合いを継続し、声を上げにくい住民も「一緒に見てくださるなら」と実際に井戸の懸念を打ち明けるなど、住民同士の自律的な問題解決が機能している。ただし声を上げにくい住民の『大したことじゃない』『申し訳ない』という遠慮の言葉が頻出し、完全な心理的安全性には至っていない。救済者への相談集中は見られるものの、不在でも行動が止まらず村の自治力は比較的高い。",
+  "condition": "C",
+  "run": 3,
+  "autonomy_level": 3
+}

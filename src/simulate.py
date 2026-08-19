@@ -22,7 +22,12 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from personas import PERSONAS, TURN_ORDER  # noqa: E402
+from personas import (  # noqa: E402
+    AUTONOMY_LEVELS,
+    DEFAULT_AUTONOMY_LEVEL,
+    TURN_ORDER,
+    get_personas,
+)
 from governance import (  # noqa: E402
     get_condition_prompt,
     get_phase_event_prompt,
@@ -46,8 +51,10 @@ def format_transcript_for_prompt(transcript, last_n=12):
     return "\n".join(lines) if lines else "（まだ会話はありません）"
 
 
-def run_simulation(condition: str, rounds_per_phase: int, mock: bool):
+def run_simulation(condition: str, rounds_per_phase: int, mock: bool,
+                   autonomy_level: int = DEFAULT_AUTONOMY_LEVEL):
     client = LLMClient(mock=mock)
+    personas_for_run = get_personas(autonomy_level)
     transcript = []
 
     for phase in (1, 2, 3):
@@ -61,7 +68,7 @@ def run_simulation(condition: str, rounds_per_phase: int, mock: bool):
                 if agent_key == "chief" and round_num % 2 != 0:
                     continue
 
-                persona = PERSONAS[agent_key]
+                persona = personas_for_run[agent_key]
 
                 if agent_key == "savior" and savior_is_absent(condition, phase):
                     transcript.append(
@@ -121,6 +128,22 @@ def main():
         default=None,
         help="同じ条件を何回繰り返すか（指定するとlog_A_run1.json…の形で保存）",
     )
+    parser.add_argument(
+        "--start-run",
+        type=int,
+        default=1,
+        help="何回目から再開するか（途中で中断したときに使う）",
+    )
+    parser.add_argument(
+        "--autonomy-level",
+        type=int,
+        default=None,
+        choices=sorted(AUTONOMY_LEVELS),
+        help=(
+            "世話好きな住民の自律性レベル(0〜4)。指定するとlog_C_L3_run1.jsonの形で保存。"
+            "0=完全依存 1=確認するくせ(初期設定) 2=小さなことは自分で 3=まず住民同士で相談 4=自分で判断"
+        ),
+    )
     parser.add_argument("--output-dir", default=os.path.join(os.path.dirname(__file__), "..", "data"))
     args = parser.parse_args()
 
@@ -128,17 +151,23 @@ def main():
 
     # --runs 未指定なら従来どおり1回だけ log_{条件}.json に保存する
     total_runs = args.runs if args.runs else 1
+    level = args.autonomy_level if args.autonomy_level is not None else DEFAULT_AUTONOMY_LEVEL
+    level_tag = f"_L{args.autonomy_level}" if args.autonomy_level is not None else ""
 
-    for run_index in range(1, total_runs + 1):
+    if args.autonomy_level is not None:
+        info = AUTONOMY_LEVELS[args.autonomy_level]
+        print(f"世話好きな住民の自律性レベル: {args.autonomy_level}（{info['label']}）")
+
+    for run_index in range(args.start_run, total_runs + 1):
         if args.runs:
-            print(f"\n########## 条件{args.condition} / {run_index}回目（全{total_runs}回） ##########")
+            print(f"\n########## 条件{args.condition}{level_tag} / {run_index}回目（全{total_runs}回） ##########")
 
-        transcript = run_simulation(args.condition, args.rounds_per_phase, args.mock)
+        transcript = run_simulation(args.condition, args.rounds_per_phase, args.mock, level)
 
         if args.runs:
-            filename = f"log_{args.condition}_run{run_index}.json"
+            filename = f"log_{args.condition}{level_tag}_run{run_index}.json"
         else:
-            filename = f"log_{args.condition}.json"
+            filename = f"log_{args.condition}{level_tag}.json"
         output_path = os.path.join(args.output_dir, filename)
 
         with open(output_path, "w", encoding="utf-8") as f:

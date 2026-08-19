@@ -33,7 +33,7 @@ from governance import (  # noqa: E402
     get_phase_event_prompt,
     savior_is_absent,
 )
-from llm_client import LLMClient  # noqa: E402
+from llm_client import LLMClient, model_tag  # noqa: E402
 
 PHASE_NAMES = {1: "平常運転", 2: "摩擦", 3: "危機"}
 
@@ -52,8 +52,9 @@ def format_transcript_for_prompt(transcript, last_n=12):
 
 
 def run_simulation(condition: str, rounds_per_phase: int, mock: bool,
-                   autonomy_level: int = DEFAULT_AUTONOMY_LEVEL):
-    client = LLMClient(mock=mock)
+                   autonomy_level: int = DEFAULT_AUTONOMY_LEVEL,
+                   model: str = None, effort: str = None):
+    client = LLMClient(mock=mock, model=model, effort=effort)
     personas_for_run = get_personas(autonomy_level)
     transcript = []
 
@@ -144,6 +145,16 @@ def main():
             "0=完全依存 1=確認するくせ(初期設定) 2=小さなことは自分で 3=まず住民同士で相談 4=自分で判断"
         ),
     )
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="村人の発言を生成するモデル（例: claude-opus-5）。省略時は既定モデル",
+    )
+    parser.add_argument(
+        "--effort",
+        default=None,
+        help="思考の深さ（low/medium/high）。思考が既定でオンのモデルで指定する",
+    )
     parser.add_argument("--output-dir", default=os.path.join(os.path.dirname(__file__), "..", "data"))
     args = parser.parse_args()
 
@@ -153,21 +164,27 @@ def main():
     total_runs = args.runs if args.runs else 1
     level = args.autonomy_level if args.autonomy_level is not None else DEFAULT_AUTONOMY_LEVEL
     level_tag = f"_L{args.autonomy_level}" if args.autonomy_level is not None else ""
+    # 既存の結果を上書きしないよう、モデルを変えたときはファイル名にタグを付ける
+    mtag = f"_{model_tag(args.model)}" if args.model else ""
 
     if args.autonomy_level is not None:
         info = AUTONOMY_LEVELS[args.autonomy_level]
         print(f"世話好きな住民の自律性レベル: {args.autonomy_level}（{info['label']}）")
+    if args.model:
+        print(f"村人のモデル: {args.model}" + (f"（effort={args.effort}）" if args.effort else ""))
 
     for run_index in range(args.start_run, total_runs + 1):
         if args.runs:
-            print(f"\n########## 条件{args.condition}{level_tag} / {run_index}回目（全{total_runs}回） ##########")
+            print(f"\n########## 条件{args.condition}{level_tag}{mtag} / {run_index}回目（全{total_runs}回） ##########")
 
-        transcript = run_simulation(args.condition, args.rounds_per_phase, args.mock, level)
+        transcript = run_simulation(
+            args.condition, args.rounds_per_phase, args.mock, level, args.model, args.effort
+        )
 
         if args.runs:
-            filename = f"log_{args.condition}{level_tag}_run{run_index}.json"
+            filename = f"log_{args.condition}{level_tag}{mtag}_run{run_index}.json"
         else:
-            filename = f"log_{args.condition}{level_tag}.json"
+            filename = f"log_{args.condition}{level_tag}{mtag}.json"
         output_path = os.path.join(args.output_dir, filename)
 
         with open(output_path, "w", encoding="utf-8") as f:

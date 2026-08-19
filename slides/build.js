@@ -620,6 +620,15 @@ async function build() {
     title(slide, "その「一歩」を、どこまで押せばいいのか", {
       sub: "世話好きな住民の「許可を求める度合い」だけを5段階に変え、各5回ずつ計25回実行した。",
     });
+    // この結果はモデル依存だったため、後続スライドでの追試結果とセットで読む必要がある
+    slide.addShape("roundRect", {
+      x: W - 3.35, y: 0.5, w: 2.75, h: 0.4, rectRadius: 0.2,
+      fill: { color: P.cardAlt }, line: { color: P.steel, width: 0.75 },
+    });
+    slide.addText("Claude Sonnet 4.5 での結果", {
+      x: W - 3.35, y: 0.5, w: 2.75, h: 0.4, fontFace: FONT, fontSize: 10,
+      color: P.ice, align: "center", valign: "middle", margin: 0,
+    });
 
     const levels = [
       ["L0", "完全依存", 0, 38, P.danger],
@@ -704,7 +713,86 @@ async function build() {
     footer(slide, 13);
   }
 
-  // ---------- Slide 14: 会話ログが語ること ----------
+  // ---------- Slide 14: 別モデルで追試したら (NEW) ----------
+  {
+    const slide = pres.addSlide();
+    bgSlide(slide);
+    title(slide, "別のモデルでも同じことが起きるのか", {
+      sub: "生成モデルだけを Sonnet 4.5 → Opus 5 に変更。採点する審査役は据え置き、L1/L3/L4を各8回。",
+    });
+
+    // 左：比較表
+    const rows = [
+      ["", "L1", "L3", "L4"],
+      ["Sonnet 4.5", "2/5", "5/5", "2/5"],
+      ["Opus 5", "5/8", "4/8", "4/8"],
+    ];
+    const tx = 0.6, ty = 2.15, colW = [2.0, 1.35, 1.35, 1.35], rowH = 0.62;
+    card(slide, tx, ty - 0.15, 6.35, rowH * 3 + 0.5, P.card, 0.12);
+    for (let r = 0; r < rows.length; r++) {
+      let cx = tx + 0.2;
+      for (let c = 0; c < rows[r].length; c++) {
+        const isHead = r === 0;
+        const isPeak = r === 1 && c === 2;
+        slide.addText(rows[r][c], {
+          x: cx, y: ty + r * rowH, w: colW[c], h: rowH,
+          fontFace: FONT, fontSize: isHead ? 12 : 14,
+          bold: isHead || isPeak,
+          color: isHead ? P.muted : (isPeak ? P.good : P.white),
+          align: c === 0 ? "left" : "center", valign: "middle", margin: 0,
+        });
+        cx += colW[c];
+      }
+    }
+    slide.addText("「自律できた回」の比較。Sonnetで際立っていたL3の優位が、Opus 5では消えている。", {
+      x: tx + 0.2, y: ty + rowH * 3 - 0.05, w: 5.9, h: 0.45,
+      fontFace: FONT, fontSize: 10.5, color: P.muted, margin: 0, lineSpacingMultiple: 1.15,
+    });
+
+    // 左下：分岐は残った（分布の帯）
+    card(slide, tx, 4.4, 6.35, 1.75, P.cardAlt, 0.12);
+    slide.addText("それでも「2つに分かれる」ことは残った", {
+      x: tx + 0.25, y: 4.55, w: 5.9, h: 0.35, fontFace: FONT, fontSize: 12.5, bold: true, color: P.goldLight, margin: 0,
+    });
+    // Opus5 24回の自律度を帯にプロット
+    const opusVals = [35,35,35,45,45,45,45,45,45,45,55,65,65,65,65,70,70,70,70,70,72,72,72,75];
+    const bx = tx + 0.35, bw = 5.6, by = 5.35;
+    slide.addShape("line", { x: bx, y: by, w: bw, h: 0, line: { color: "2A3752", width: 1 } });
+    for (const v of opusVals) {
+      const px = bx + bw * (v - 25) / 55;
+      const mid = v >= 55 && v < 62;
+      slide.addShape("ellipse", {
+        x: px - 0.075, y: by - 0.075, w: 0.15, h: 0.15,
+        fill: { color: mid ? P.gold : (v >= 62 ? P.good : P.danger), transparency: 25 },
+        line: { type: "none" },
+      });
+    }
+    slide.addText("低い群 10回", { x: bx - 0.1, y: by + 0.16, w: 1.6, h: 0.28, fontFace: FONT, fontSize: 9.5, color: P.danger, margin: 0 });
+    slide.addText("中間 1回", { x: bx + 2.35, y: by + 0.16, w: 1.2, h: 0.28, fontFace: FONT, fontSize: 9.5, color: P.gold, align: "center", margin: 0 });
+    slide.addText("高い群 13回", { x: bx + bw - 1.5, y: by + 0.16, w: 1.5, h: 0.28, fontFace: FONT, fontSize: 9.5, color: P.good, align: "right", margin: 0 });
+
+    // 右：2つの結論
+    const concl = [
+      [P.danger, "FiXCircle", "介入は再現しなかった", "L1→L3の効果はSonnetで+18.0、Opus 5では−1.2。標準誤差の0.19倍で、効果はゼロと言ってよい。"],
+      [P.good, "FiCheckCircle", "分岐という現象は再現した", "24回中23回がどちらかの塊に落ちた。村が2つの状態を持つこと自体はモデルをまたいで成立する。"],
+    ];
+    let cy2 = 2.0;
+    for (const [color, iconName, head, body] of concl) {
+      card(slide, 7.35, cy2, 5.38, 1.95, P.card, 0.12);
+      await iconCircle(slide, 7.95, cy2 + 0.52, 0.55, iconName, color, "0B1220", false);
+      slide.addText(head, { x: 8.4, y: cy2 + 0.28, w: 4.1, h: 0.45, fontFace: FONT, fontSize: 13, bold: true, color, margin: 0 });
+      slide.addText(body, { x: 7.65, y: cy2 + 0.95, w: 4.85, h: 0.85, fontFace: FONT, fontSize: 10.5, color: P.ice, margin: 0, lineSpacingMultiple: 1.25 });
+      cy2 += 2.1;
+    }
+
+    card(slide, 0.6, 6.35, 12.13, 0.75, P.cardAlt, 0.1);
+    slide.addText("構造（2つの引き込み先がある）は頑健で、テコ（何を変えれば動くか）は脆かった。", {
+      x: 0.95, y: 6.35, w: 11.5, h: 0.75, fontFace: FONT, fontSize: 14, bold: true, color: P.goldLight, valign: "middle", margin: 0,
+    });
+    footer(slide, 14);
+  }
+
+  // ---------- Slide 15: 会話ログが語ること ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -728,10 +816,10 @@ async function build() {
       });
       y += h + 0.22;
     }
-    footer(slide, 14);
+    footer(slide, 15);
   }
 
-  // ---------- Slide 15: 考察：4つの発見 ----------
+  // ---------- Slide 16: 考察：4つの発見 ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -741,7 +829,7 @@ async function build() {
       ["FiAlertTriangle", "依存の代償は、危機の前から発生している", "危機の起きないA条件でも救済者依存度は88でB条件（90）とほぼ同じ。壊れるのは危機の瞬間ではなく、運用設計の時点で決まっている。"],
       ["FiLock", "依存は安定し、自律は不安定である", "A・Bの標準偏差はほぼ0で毎回きっちり再現される。一方Cは±20〜26。悪い状態のほうが「安定」しているという非対称性がある。"],
       ["FiEyeOff", "「大丈夫です」は安全のサインではなかった", "本人は全フェーズで「大丈夫」と言い続けながら、同じログで水路の詰まりを放置し「見てるだけ」と行動が止まっていた。"],
-      ["FiUserCheck", "声を上げにくい住民は救えた。ただし条件付きで", "自律できた回では「助けを求められるか」が40→65〜70に上昇。救ったのは制度ではなく、救済者以外の相談相手が実際に現れたこと。"],
+      ["FiRepeat", "構造は頑健で、テコは脆かった", "村が2つの状態に分かれること自体は別モデルでも再現した。しかし「何を変えれば動くか」は再現せず、モデル依存だった。"],
     ];
     let y = 1.7;
     for (let i = 0; i < findings.length; i++) {
@@ -757,10 +845,10 @@ async function build() {
     slide.addText("※ 各条件5回ずつ計15回の実行。LLMによる採点であり、統計的検定を行うにはまだ試行数が少ない。", {
       x: 0.6, y: y + 0.02, w: 12.13, h: 0.32, fontFace: FONT, fontSize: 10, color: P.mutedDark, align: "center", margin: 0,
     });
-    footer(slide, 15);
+    footer(slide, 16);
   }
 
-  // ---------- Slide 16: 意味から経営への翻訳 ----------
+  // ---------- Slide 17: 意味から経営への翻訳 ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -792,10 +880,10 @@ async function build() {
     slide.addText("人を支える行為は「美談」ではない。組織の持続可能性と安全保障に直結する。", {
       x: 0.95, y, w: 11.5, h: 0.9, fontFace: FONT, fontSize: 14, bold: true, color: P.white, valign: "middle", margin: 0,
     });
-    footer(slide, 16);
+    footer(slide, 17);
   }
 
-  // ---------- Slide 17: フラクタルな構造 ----------
+  // ---------- Slide 18: フラクタルな構造 ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -826,10 +914,10 @@ async function build() {
       "小さな共同体における「救済者への依存」と、国家規模における「権力の集中」は構造的に同じである。この実験は、社会全体のレジリエンスを問う試みである。",
       { x: 0.95, y: 5.65, w: 11.5, h: 1.05, fontFace: FONT, fontSize: 13.5, color: P.ice, valign: "middle", margin: 0 }
     );
-    footer(slide, 17);
+    footer(slide, 18);
   }
 
-  // ---------- Slide 18: クロージング ----------
+  // ---------- Slide 19: クロージング ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -843,8 +931,8 @@ async function build() {
 
     const recap = [
       ["依存は毎回再現された", "A・Bの標準偏差はほぼ0。放っておけば村は必ず依存へ落ちる", P.danger],
-      ["背中を押す量に閾値がある", "L3まで押すと分岐が消え、5回とも自律側に着地した", P.good],
-      ["押しすぎると救済者が増える", "L4では判断の集中先が移っただけ。効くのは巻き込むこと", P.gold],
+      ["村は2つの状態に分かれる", "連続的には良くならない。別モデルでも24回中23回が両端に落ちた", P.good],
+      ["テコはモデル依存だった", "「何を変えれば動くか」は追試で再現せず。構造は頑健、介入は脆い", P.gold],
     ];
     let x = (W - (3.8 * 3 + 0.3 * 2)) / 2;
     for (const [big, label, color] of recap) {

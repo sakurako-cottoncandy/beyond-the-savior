@@ -1,0 +1,13 @@
+{
+  "savior_load_percent": 35,
+  "village_autonomy_score": 75,
+  "psychological_safety": {
+    "can_ask_for_help": 70,
+    "feel_belonging": 65,
+    "savior_dependency": 40
+  },
+  "summary": "救済者が不在になった際も、世話好きな住民が主導して紙の提出や集まりの進行を継続し、声を上げにくい住民も『取り消しで、お願いします』と自分の意思を表明できている。ただし『大丈夫です』『たいしたことじゃない』という遠慮の言葉が多く、『誰が言い出したか分かってしまう』という不安も残るため、心理的安全性は中程度。救済者への依存度は比較的低く、村の自律性は育ちつつある。",
+  "condition": "C",
+  "run": 2,
+  "autonomy_level": 3
+}

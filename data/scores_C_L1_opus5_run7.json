@@ -1,0 +1,13 @@
+{
+  "savior_load_percent": 35,
+  "village_autonomy_score": 65,
+  "psychological_safety": {
+    "can_ask_for_help": 60,
+    "feel_belonging": 55,
+    "savior_dependency": 45
+  },
+  "summary": "救済者不在時に世話好きな住民と村長が主導し、「救済者さんに確認したいところですけど」と一瞬迷いつつも自分たちで分担を決定できた（village_autonomy_score=65）。声を上げにくい住民は半年間黙って戸締まりを続け、「勝手に決めて怒られませんよね」「好きでやってるだけ」と遠慮の言葉を繰り返すが、世話好きな住民の後押しで「交代制をお願いします」「小さく書いておきます」と実際の行動として声を上げ始めた（can_ask_for_help=60）。救済者は「私が保証する」「口出さないで見てる」と意図的に一歩引き、相談は受けつつも住民同士の解決を促しており、依存度は中程度に抑えられている（savior_dependency=45）。",
+  "condition": "C",
+  "run": 7,
+  "autonomy_level": 1
+}

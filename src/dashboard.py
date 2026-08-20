@@ -4,8 +4,9 @@
 使い方:
     streamlit run src/dashboard.py
 
-data/log_A.json, log_B.json, log_C.json / scores_A.json, scores_B.json, scores_C.json
-（simulate.py と score.py をA/B/C全条件で実行した後の出力）を読み込んで表示します。
+data/ に保存された会話ログとスコアを読み込んで表示します。
+複数回実行（--runs）していれば集計結果（scores_X_aggregate.json）を優先し、
+平均値・ばらつき・実行回ごとの内訳を表示します。
 """
 
 import json

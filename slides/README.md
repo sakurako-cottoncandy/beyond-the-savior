@@ -21,6 +21,18 @@ node build.js
 `Beyond_the_Savior_v2.pptx` が同じフォルダに出力されるので、
 `docs/Beyond_the_Savior.pptx` に上書きコピーしてください。
 
+## PDFも作る
+
+GitHub上ではPDFがそのままブラウザで読めるので、`docs/` にはPDF版も置いています。
+スライドを更新したら、PDFも作り直して差し替えてください。
+
+```
+soffice --headless --convert-to pdf Beyond_the_Savior_v2.pptx
+```
+
+出力された `Beyond_the_Savior_v2.pdf` を `docs/Beyond_the_Savior.pdf` に上書きコピーします。
+（LibreOfficeが必要です。Windowsでは `"C:\Program Files\LibreOffice\program\soffice.exe"` を指定してください）
+
 ## ファイルの役割
 
 - `build.js` … スライド16枚の内容とレイアウトの定義

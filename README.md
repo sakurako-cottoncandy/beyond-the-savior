@@ -2,6 +2,9 @@
 
 AIエージェント社会シミュレーションハッカソン Vol.2 提出プロジェクト（ソロ参加）
 
+📊 **[発表スライドを読む（PDF・22枚）](docs/Beyond_the_Savior.pdf)** ／
+📄 **[実験結果の詳細（RESULTS.md）](RESULTS.md)**
+
 コミュニティに必ずいる「肩書きのない救済者」がいなくなったとき、村は自力で立ち直れるのか？
 LLMマルチエージェントで4人の村をシミュレーションし、3つのガバナンス条件（A/B/C）で
 同じ危機イベントに対する反応の違いを観測します。
@@ -168,9 +171,11 @@ streamlit run src/dashboard.py
 ## ハッカソン提出物チェックリスト
 
 - [x] GitHubリポジトリ（このプロジェクト）
-- [x] プレゼンテーション資料（[`docs/Beyond_the_Savior.pptx`](docs/Beyond_the_Savior.pptx)）
+- [x] プレゼンテーション資料
+      … [PDF版](docs/Beyond_the_Savior.pdf)（ブラウザでそのまま読めます）
+      ／ [PowerPoint版](docs/Beyond_the_Savior.pptx)
 - [x] README（このファイル：目的・実行環境・使い方）
-- [x] RESULTS.md（A/B/Cの比較結果・観測されたこと・考察 ─ ダッシュボードを見ながらまとめる）
+- [x] RESULTS.md（A/B/Cの比較結果・観測されたこと・考察）
 
 ---
 
@@ -185,7 +190,8 @@ hackathon_project/
 ├── docs/
 │   ├── CONCEPT.md           企画・実験設計の詳細
 │   ├── PROMPT_DESIGN.md     エージェントの人格設計
-│   └── Beyond_the_Savior.pptx  プレゼンテーション資料
+│   ├── Beyond_the_Savior.pdf   プレゼン資料（PDF・GitHub上でそのまま読める）
+│   └── Beyond_the_Savior.pptx  プレゼン資料（編集用）
 ├── slides/                  プレゼン資料(pptx)を生成するスクリプト
 ├── src/
 │   ├── personas.py          4体の人格プロンプト

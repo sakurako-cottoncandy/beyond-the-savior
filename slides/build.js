@@ -587,9 +587,9 @@ async function build() {
     slide.addText("● 救済者の負荷", { x: plotX + 0.6, y: plotY - 0.12, w: 2.0, h: 0.25, fontFace: FONT, fontSize: 10, color: P.danger, margin: 0 });
     slide.addText("● 村の自律度", { x: plotX + 2.6, y: plotY - 0.12, w: 2.0, h: 0.25, fontFace: FONT, fontSize: 10, color: P.good, margin: 0 });
 
-    // 右：分岐の原因
-    slide.addText("分岐点は、たった一人の最初の一歩だった", {
-      x: 7.95, y: 2.0, w: 4.8, h: 0.4, fontFace: FONT, fontSize: 13.5, bold: true, color: P.white, margin: 0,
+    // 右：分岐に対応していた違い（質的観察であることを明示する）
+    slide.addText("分かれ方に対応していた違い（5回分のログの観察）", {
+      x: 7.95, y: 2.0, w: 4.8, h: 0.4, fontFace: FONT, fontSize: 13, bold: true, color: P.white, margin: 0,
     });
 
     const branches = [
@@ -607,7 +607,7 @@ async function build() {
     }
 
     card(slide, 0.6, 6.2, 12.13, 0.75, P.cardAlt, 0.1);
-    slide.addText("制度は自律を「可能にする」だけで、自律そのものを生みはしない。", {
+    slide.addText("同じ制度を敷いても、結果は同じにならなかった。制度は結果を一意に決めていない。", {
       x: 0.95, y: 6.2, w: 11.5, h: 0.75, fontFace: FONT, fontSize: 14, bold: true, color: P.goldLight, valign: "middle", margin: 0,
     });
     footer(slide, 12);
@@ -687,15 +687,15 @@ async function build() {
     slide.addText("村の自律度（5回平均）と、自律できた回数", {
       x: gx + 0.5, y: gy - 0.18, w: 5.0, h: 0.26, fontFace: FONT, fontSize: 10, color: P.muted, margin: 0,
     });
-    slide.addText("↑ 押すほど良くなるが、L4で反転", {
+    slide.addText("↑ L3まで上がり、L4で下がった（各水準n=5）", {
       x: gx + 0.5, y: gy + gh + 0.72, w: 6.0, h: 0.3, fontFace: FONT, fontSize: 11,
       italic: true, color: P.ice, align: "center", margin: 0,
     });
 
-    // 右：2つの発見
+    // 右：観測と、そこからの読み（断定しない）
     const findings = [
-      [P.good, "L3で分岐が消えた", "2/5だった自律が5回とも成功に。ばらつきも最小（幅10点）。「運が良ければ」を「確実に」へ変える閾値がある。"],
-      [P.danger, "L4は第二の救済者を生んだ", "独立度はL3より高いのに自律度は71→55。住民の待ち相手が救済者から世話好きな住民に移っただけだった。"],
+      [P.good, "観測：L3では5回とも自律側", "L1では2/5だった自律がL3では5/5。自律度の幅も10点と最小だった。ただしn=5であり、閾値の存在が示せたわけではない。"],
+      [P.danger, "解釈：L4は依存先が移った可能性", "独立度はL3より高いのに自律度は71→55。ログでは住民の待ち相手が世話好きな住民に移った様子が読める（質的観察）。"],
     ];
     let fy = 1.95;
     for (const [color, head, body] of findings) {
@@ -707,7 +707,7 @@ async function build() {
     }
 
     card(slide, 0.6, 6.28, 12.13, 0.72, P.card, 0.1);
-    slide.addText("効いていたのは「救済者に頼らないこと」ではなく、「他の住民を巻き込むこと」だった。", {
+    slide.addText("この条件では、独立度の高さより「他の住民を巻き込むか」のほうが結果と対応していた。", {
       x: 0.95, y: 6.28, w: 11.5, h: 0.72, fontFace: FONT, fontSize: 14, bold: true, color: P.goldLight, valign: "middle", margin: 0,
     });
     footer(slide, 13);
@@ -771,10 +771,10 @@ async function build() {
     slide.addText("中間 1回", { x: bx + 2.35, y: by + 0.16, w: 1.2, h: 0.28, fontFace: FONT, fontSize: 9.5, color: P.gold, align: "center", margin: 0 });
     slide.addText("高い群 13回", { x: bx + bw - 1.5, y: by + 0.16, w: 1.5, h: 0.28, fontFace: FONT, fontSize: 9.5, color: P.good, align: "right", margin: 0 });
 
-    // 右：2つの結論
+    // 右：2つの観測（断定せず、測れた範囲で書く）
     const concl = [
-      [P.danger, "FiXCircle", "介入は再現しなかった", "L1→L3の効果はSonnetで+18.0、Opus 5では−1.2。標準誤差の0.19倍で、効果はゼロと言ってよい。"],
-      [P.good, "FiCheckCircle", "分岐という現象は再現した", "24回中23回がどちらかの塊に落ちた。村が2つの状態を持つこと自体はモデルをまたいで成立する。"],
+      [P.danger, "FiXCircle", "介入の効果は再現しなかった", "L1→L3の自律度差はSonnetで+18.0、Opus 5では−1.2（標準誤差の0.19倍）。この条件では効果を検出できなかった。"],
+      [P.good, "FiCheckCircle", "2つに分かれること自体は両方で観測", "Opus 5でも24回中23回がどちらかの塊に落ちた（Sonnetは25回中22回）。ただし比べたのは2モデルのみ。"],
     ];
     let cy2 = 2.0;
     for (const [color, iconName, head, body] of concl) {
@@ -786,7 +786,7 @@ async function build() {
     }
 
     card(slide, 0.6, 6.35, 12.13, 0.75, P.cardAlt, 0.1);
-    slide.addText("構造（2つの引き込み先がある）は頑健で、テコ（何を変えれば動くか）は脆かった。", {
+    slide.addText("2つに分かれる現象は両モデルで観測できた。一方「何を変えれば動くか」は移らなかった。", {
       x: 0.95, y: 6.35, w: 11.5, h: 0.75, fontFace: FONT, fontSize: 14, bold: true, color: P.goldLight, valign: "middle", margin: 0,
     });
     footer(slide, 14);
@@ -1024,12 +1024,24 @@ async function build() {
   {
     const slide = pres.addSlide();
     bgSlide(slide);
-    title(slide, "フラクタルな構造：村から国家の「メタ安全保障」へ");
+    title(slide, "なぜこのテーマを選んだか", {
+      sub: "以下は本実験の結果ではなく、この問いに取り組む動機になった着想です。",
+    });
+
+    // 本実験は4体の村しか扱っていない。都市・国のデータは一切ない
+    slide.addShape("roundRect", {
+      x: W - 3.05, y: 0.5, w: 2.45, h: 0.4, rectRadius: 0.2,
+      fill: { color: P.cardAlt }, line: { color: P.danger, width: 0.75 },
+    });
+    slide.addText("未検証・データなし", {
+      x: W - 3.05, y: 0.5, w: 2.45, h: 0.4, fontFace: FONT, fontSize: 10,
+      color: P.danger, align: "center", valign: "middle", margin: 0,
+    });
 
     const tiers = [
-      ["FiHome", P.condC, "村", "「世話焼きへの過度な依存」と疲弊"],
-      ["FiMap", P.condA, "都市", "「支援制度の複雑化」と、誰にも届かないSOS"],
-      ["FiGlobe", P.condB, "国", "「権力の集中」と、強い指導者への救世主待望"],
+      ["FiHome", P.condC, "村", "「世話焼きへの過度な依存」と疲弊\n（本実験が扱ったのはここだけ）"],
+      ["FiMap", P.mutedDark, "都市", "「支援制度の複雑化」と、誰にも届かないSOS"],
+      ["FiGlobe", P.mutedDark, "国", "「権力の集中」と、強い指導者への救世主待望"],
     ];
     const cw = 3.75, gap = 0.34, startX = (W - (cw * 3 + gap * 2)) / 2, y = 2.05, ch = 3.15;
     for (let i = 0; i < tiers.length; i++) {
@@ -1048,8 +1060,9 @@ async function build() {
     }
     card(slide, 0.6, 5.65, 12.13, 1.05, P.cardAlt, 0.1);
     slide.addText(
-      "小さな共同体における「救済者への依存」と、国家規模における「権力の集中」は構造的に同じである。この実験は、社会全体のレジリエンスを問う試みである。",
-      { x: 0.95, y: 5.65, w: 11.5, h: 1.05, fontFace: FONT, fontSize: 13.5, color: P.ice, valign: "middle", margin: 0 }
+      "「小さな共同体の依存と、大きな組織の権力集中は似た形をしているのではないか」という着想から始めた。"
+      + "本実験が観測したのは4体の村のみで、都市や国のデータは扱っていない。",
+      { x: 0.95, y: 5.65, w: 11.5, h: 1.05, fontFace: FONT, fontSize: 13, color: P.ice, valign: "middle", margin: 0 }
     );
     footer(slide, 20);
   }
@@ -1058,21 +1071,31 @@ async function build() {
   {
     const slide = pres.addSlide();
     bgSlide(slide);
-    title(slide, "救済者×ガバナンスに戻すと", {
-      sub: "同じ処方箋が、どの集団にも同じように効くわけではない。",
+    title(slide, "救済者×ガバナンスに戻すと（ここからは仮説）", {
+      sub: "観測された2条件の違いを、現実の集団に当てはめて考えたらどうなるか。",
+    });
+
+    // ここは観測ではなく、観測から立てた仮説であることを明示する
+    slide.addShape("roundRect", {
+      x: W - 2.6, y: 0.5, w: 2.0, h: 0.4, rectRadius: 0.2,
+      fill: { color: P.cardAlt }, line: { color: P.steel, width: 0.75 },
+    });
+    slide.addText("仮説（未検証）", {
+      x: W - 2.6, y: 0.5, w: 2.0, h: 0.4, fontFace: FONT, fontSize: 10,
+      color: P.steel, align: "center", valign: "middle", margin: 0,
     });
 
     const types = [
-      [P.gold, "FiTarget", "波及が強い集団",
+      [P.gold, "FiTarget", "波及が強い集団だとしたら",
        "一人を動かすと集団全体が動く",
-       ["救済者への一点集中には構造的な合理性がある",
-        "「誰か一人を育てる／支える」が実際に最も効く打ち手になる",
-        "依存は怠慢ではなく、その集団で合理的だから起きている"]],
-      [P.steel, "FiGitBranch", "判断が独立した集団",
+       ["救済者への一点集中に合理性が生じうる",
+        "「誰か一人を育てる／支える」が効く打ち手になりうる",
+        "依存は怠慢とは限らず、割に合う選択かもしれない"]],
+      [P.steel, "FiGitBranch", "判断が独立した集団だとしたら",
        "一人を動かしても集団は動かない",
-       ["キーパーソンを立てる施策が通用しない",
-        "複数の参加経路や意思決定の仕組みが要る",
-        "変えるべきは人ではなく、制度と場のほう"]],
+       ["キーパーソンを立てる施策が効きにくい",
+        "複数の参加経路や意思決定の仕組みが要りそう",
+        "変える対象は人より、制度と場のほうかもしれない"]],
     ];
 
     const cw = 6.0, gap = 0.53, sx = (W - (cw * 2 + gap)) / 2;
@@ -1105,8 +1128,9 @@ async function build() {
 
     card(slide, 0.6, 6.2, 12.13, 0.82, P.cardAlt, 0.1);
     slide.addText(
-      "「救済者に依存するな」「権限を分散せよ」は、集団のタイプを見ないまま打つと、効く集団とまったく効かない集団に分かれる。",
-      { x: 0.95, y: 6.2, w: 11.5, h: 0.82, fontFace: FONT, fontSize: 13.5, bold: true,
+      "「救済者に依存するな」「権限を分散せよ」という処方箋も、集団によって効き方が変わりうる。"
+      + "この見立てを確かめるには、波及の強さが違う集団を並べて同じ介入を試す必要がある。",
+      { x: 0.95, y: 6.2, w: 11.5, h: 0.82, fontFace: FONT, fontSize: 13, bold: true,
         color: P.goldLight, valign: "middle", margin: 0 }
     );
     footer(slide, 21);

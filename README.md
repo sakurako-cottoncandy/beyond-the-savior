@@ -53,7 +53,7 @@ python3 --version
 ### 2. このプロジェクトのフォルダに移動する
 
 ```
-cd hackathon_project
+cd beyond-the-savior
 ```
 
 ### 3. 必要なライブラリをインストールする
@@ -182,7 +182,7 @@ streamlit run src/dashboard.py
 ## フォルダ構成
 
 ```
-hackathon_project/
+beyond-the-savior/
 ├── README.md              このファイル
 ├── requirements.txt        必要なライブラリ一覧
 ├── .env.example             APIキー設定のテンプレート
@@ -199,7 +199,10 @@ hackathon_project/
 │   ├── llm_client.py        Claude APIラッパー（--mock対応）
 │   ├── simulate.py          シミュレーション実行スクリプト（--runsで複数回実行）
 │   ├── score.py              スコアリングスクリプト（--runsで平均・標準偏差を集計）
-│   ├── analyze_threshold.py  自律性レベル別の閾値・最適点を集計
+│   ├── analyze_threshold.py    自律性レベル別に自律できた回数を集計
+│   ├── analyze_compliance.py   (A) 指示がキーパーソン本人にどれだけ届いたか
+│   ├── analyze_propagation.py  (B) その変化が周囲の住民へどれだけ伝わったか
+│   ├── analyze_chain.py        同一の介入差で揃えてA・B・村全体を比較
 │   └── dashboard.py          Streamlitダッシュボード
 └── data/                     実行結果が保存される場所
     ├── log_A_run1.json 〜      各回の会話ログ

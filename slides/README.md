@@ -35,5 +35,5 @@ soffice --headless --convert-to pdf Beyond_the_Savior_v2.pptx
 
 ## ファイルの役割
 
-- `build.js` … スライド16枚の内容とレイアウトの定義
+- `build.js` … スライド22枚の内容とレイアウトの定義
 - `icons.js` … アイコン（react-icons）をPNGに変換してスライドに貼るための補助

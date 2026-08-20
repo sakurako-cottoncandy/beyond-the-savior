@@ -436,7 +436,7 @@ async function build() {
     const slide = pres.addSlide();
     bgSlide(slide);
     title(slide, "「聞く」のではなく「行動を見る」", {
-      sub: "本人に尋ねても本心は出ない。だから自己申告は一切取らず、行動の痕跡だけを評価した。",
+      sub: "自己申告だけでは状態を捉えきれないことがある。そこで自己申告は取らず、行動の痕跡を評価した。",
     });
 
     // 対比：建前 vs 行動

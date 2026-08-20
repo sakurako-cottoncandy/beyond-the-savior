@@ -797,7 +797,7 @@ async function build() {
     const slide = pres.addSlide();
     bgSlide(slide);
     title(slide, "「一人を変えられること」と「集団が変わること」は別だった", {
-      sub: "介入から結果までを途中で切り、2段に分けて測った。",
+      sub: "同じ介入差（L1→L3）で、各段の動いた量を揃えて測った。",
       size: 27,
     });
 
@@ -811,10 +811,15 @@ async function build() {
     const startX = laneX;
 
     // 行ごとの (ラベル, A強度pt, B強度pt, 村の効果, 村の色)
+    // すべてL1→L3の変化量。AとBは分類数が違うので絶対値どうしは比べず、
+    // 同じ指標のモデル間の大小だけを見る（太さもモデル間の相対で決める）
     const lanes = [
-      ["Sonnet 4.5 条件", 11.1, 20.0, "+18.0", P.good],
-      ["Opus 5 条件", 40.3, 4.2, "−1.2", P.danger],
+      ["Sonnet 4.5 条件", 44.4, 22.2, "+18.0", P.good],
+      ["Opus 5 条件", 50.0, 8.3, "−1.2", P.danger],
     ];
+    // 各指標について、2条件のうち大きいほうを太くする
+    const maxA = Math.max(...lanes.map((l) => l[1]));
+    const maxB = Math.max(...lanes.map((l) => l[2]));
 
     let ly = 2.05;
     for (let li = 0; li < lanes.length; li++) {
@@ -854,8 +859,10 @@ async function build() {
         const ay = ny + nodeH / 2;
         const measured = i < 2;                  // 0=(A) 1=(B)
         const val = i === 0 ? aVal : bVal;
-        const strong = measured && val >= 15;
-        const w = measured ? (strong ? 4.5 : 1) : 1.25;
+        // 2条件のうち大きいほうを太くする（AとBの絶対値どうしは比較しない）
+        const ratio = measured ? val / (i === 0 ? maxA : maxB) : 1;
+        const strong = measured && ratio > 0.95;
+        const w = measured ? (strong ? 4.5 : 1.25) : 1.25;
         const col = measured ? (strong ? P.good : P.mutedDark) : P.muted;
         slide.addShape("line", {
           x: ax + 0.12, y: ay, w: gapX - 0.24, h: 0,
@@ -874,13 +881,14 @@ async function build() {
 
     // ---- 結論の一文と、何を測ったかの注記 ----
     card(slide, 0.6, 6.15, 12.13, 0.72, P.cardAlt, 0.1);
-    slide.addText("村全体を動かしたのは、介入の精度（A）ではなく、周囲への波及（B）だった。", {
+    slide.addText("本人の変化量はほぼ互角（44.4 対 50.0）。それでも村全体の結果は大きく分かれた。", {
       x: 0.95, y: 6.15, w: 11.5, h: 0.72, fontFace: FONT, fontSize: 14, bold: true,
       color: P.goldLight, valign: "middle", margin: 0,
     });
     slide.addText(
-      "(A) キーパーソン本人の発言が指示どおり変わった幅　／　(B) それに応じて周囲の住民の挙動が変わった幅",
-      { x: 0.6, y: 6.95, w: 12.13, h: 0.3, fontFace: FONT, fontSize: 9.5,
+      "(A)(B)とも「L1→L3で発言分類の割合が動いた量の合計」。(A)は3分類・(B)は2分類の合計のため、"
+      + "AとBの絶対値どうしは比較せず、同じ指標のモデル間の大小のみを見る。",
+      { x: 0.6, y: 6.95, w: 12.13, h: 0.3, fontFace: FONT, fontSize: 9,
         color: P.mutedDark, align: "center", margin: 0 }
     );
     footer(slide, 15);
@@ -893,8 +901,8 @@ async function build() {
     title(slide, "どこまで言えて、どこからが仮説か");
 
     const tiers = [
-      [P.good, "FiEye", "観測", "Sonnet 4.5条件では、キーパーソン本人への介入の反映は小さかった（+11.1pt）のに、周囲の住民の挙動は大きく変化した（20.0pt）。Opus 5条件では逆に、本人はより指示どおり変化した（+40.3pt）のに、周囲の変化は小さかった（4.2pt）。村全体が動いたのは後者ではなく前者だった。"],
-      [P.gold, "FiSearch", "解釈", "集団を動かしたのは介入の精度ではなく、変化が周囲へ波及するかどうかだった。2条件で波及の大きさが違った背景には、集団内の実効的な結合の強さの違いがあった可能性がある。ただし「結合構造」そのものは測っていない。測ったのは介入条件に対する他住民の波及感度である。"],
+      [P.good, "FiEye", "観測", "同一の介入差で揃えて計算すると、(A)本人の変化は3つの介入差すべてでOpus 5条件のほうが大きく、(B)周囲の変化は3つすべてでSonnet 4.5条件のほうが大きかった。村全体の変化は3つのうち2つでSonnet 4.5条件のほうが大きい。つまり村全体の変化の大きさは、本人への介入反映の大きさより、周囲の挙動変化の大きさと対応していた。"],
+      [P.gold, "FiSearch", "解釈", "2条件で周囲の変化量が違った背景には、集団内の実効的な結合／波及の強さの違いがあった可能性がある。ただし「結合構造」そのものは測っていない。測ったのは介入条件に対する他住民の波及感度である。また一致は3点中2点であり、厳密な因果連鎖の定量比較としては成立していない。"],
       [P.steel, "FiHelpCircle", "仮説", "キーパーソン介入の有効性は、その人物の能力や介入の精度だけでなく、その人物の行動変容が周囲へどの程度波及する集団なのかに依存するのではないか。検証には、波及の強さが異なる集団を3点以上並べて同一の介入を加える必要がある。"],
     ];
 
@@ -1117,9 +1125,9 @@ async function build() {
     });
 
     const recap = [
-      ["一人は変えられた", "キーパーソン本人は指示どおりに動かせた（+40.3pt）", P.steel],
-      ["でも集団は動かなかった", "周囲への波及は4.2pt。村全体の自律度は−1.2で変わらず", P.danger],
-      ["効くかは集団側で決まる", "介入の精度ではなく、変化が周囲へ伝わるかが分けていた", P.good],
+      ["本人は同じだけ変わった", "同じ介入でキーパーソン本人の変化量はほぼ互角（44.4対50.0）", P.steel],
+      ["でも集団の結果は割れた", "村全体の自律度は +18.0 と −1.2。周囲の変化量は22.2対8.3", P.danger],
+      ["対応していたのは周囲の側", "村の変化は、介入の反映量より周囲の挙動変化と対応していた", P.good],
     ];
     let x = (W - (3.8 * 3 + 0.3 * 2)) / 2;
     for (const [big, label, color] of recap) {

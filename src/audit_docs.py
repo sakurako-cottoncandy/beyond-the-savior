@@ -141,13 +141,42 @@ def ground_truth():
     return "\n".join(out)
 
 
+class SlideExtractionError(RuntimeError):
+    """スライド本文を取り出せなかったときに投げる。
+
+    本文が欠けたまま監査すると「スライドには問題なし」という誤った結論が出るため、
+    黙って続行させず必ず止める。
+    """
+
+
 def slide_text():
+    """発表スライドの本文をテキストで取り出す。失敗したら例外にする。"""
+    pptx = os.path.join(ROOT, "docs", "Beyond_the_Savior.pptx")
+    if not os.path.exists(pptx):
+        raise SlideExtractionError(f"スライドが見つかりません: {pptx}")
+
     try:
-        r = subprocess.run(["markitdown", os.path.join(ROOT, "docs", "Beyond_the_Savior.pptx")],
-                           capture_output=True, text=True, encoding="utf-8", errors="replace")
-        return r.stdout
+        r = subprocess.run(["markitdown", pptx], capture_output=True,
+                           text=True, encoding="utf-8", errors="replace")
     except FileNotFoundError:
-        return "（markitdownが無いためスライド本文を取得できませんでした）"
+        raise SlideExtractionError(
+            "markitdown が見つかりません。監査にはスライド本文が必要です。\n"
+            "  pip install -r requirements.txt を実行してください。"
+        )
+
+    if r.returncode != 0:
+        raise SlideExtractionError(
+            f"markitdown がスライドの読み取りに失敗しました（終了コード {r.returncode}）。\n"
+            f"  {(r.stderr or '').strip()[:300]}"
+        )
+
+    text = (r.stdout or "").strip()
+    # 22枚ぶんの本文があれば数千文字になる。極端に短いときは抽出に失敗している
+    if len(text) < 1000:
+        raise SlideExtractionError(
+            f"スライド本文が短すぎます（{len(text)}文字）。抽出に失敗した可能性があります。"
+        )
+    return text
 
 
 def main():
@@ -160,11 +189,20 @@ def main():
     args = parser.parse_args()
 
     truth = ground_truth()
+    try:
+        slides = slide_text()
+    except SlideExtractionError as e:
+        print(f"エラー: {e}", file=sys.stderr)
+        print("\nスライド本文を含めずに監査すると、スライドの問題を見落としたまま"
+              "「問題なし」と報告されてしまうため、ここで中止します。", file=sys.stderr)
+        sys.exit(1)
+
     docs = {
         "RESULTS.md": io.open(os.path.join(ROOT, "RESULTS.md"), encoding="utf-8").read(),
         "README.md": io.open(os.path.join(ROOT, "README.md"), encoding="utf-8").read(),
-        "発表スライドの本文": slide_text(),
+        "発表スライドの本文": slides,
     }
+    print(f"スライド本文: {len(slides):,} 文字を取得")
 
     user = ["# データから算出した真値\n", truth, "\n\n# 提出物の全文\n"]
     for name, body in docs.items():

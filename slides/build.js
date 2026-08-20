@@ -403,12 +403,19 @@ async function build() {
     slide.addText("組織運営の指標\n(Operational Metrics)", {
       x: 1.85, y: colY + 0.35, w: 4.4, h: 0.6, fontFace: FONT, fontSize: 15, bold: true, color: P.steel, margin: 0, lineSpacingMultiple: 1.1,
     });
-    const opItems = ["救済者の負荷メーター（相談の集中度、0〜100%）", "村の自律度スコア（救済者以外が自力で解決できた割合）"];
-    let oy = colY + 1.35;
-    for (const it of opItems) {
-      slide.addShape("ellipse", { x: 1.0, y: oy + 0.12, w: 0.14, h: 0.14, fill: { color: P.steel }, line: { type: "none" } });
-      slide.addText(it, { x: 1.3, y: oy, w: 4.9, h: 0.7, fontFace: FONT, fontSize: 13.5, color: P.ice, margin: 0, lineSpacingMultiple: 1.25 });
-      oy += 0.95;
+    // 機械的な計数ではなくLLM審査役の総合評価であることが分かる書き方にする
+    const opItems = [
+      ["救済者の負荷メーター",
+       "相談や判断が救済者に集中した程度を、会話ログの行動シグナルに基づきLLM審査役が0〜100で評価"],
+      ["村の自律度",
+       "住民が救済者に頼らず対処できた程度を、会話ログの行動シグナルに基づきLLM審査役が0〜100で評価"],
+    ];
+    let oy = colY + 1.3;
+    for (const [name, desc] of opItems) {
+      slide.addShape("ellipse", { x: 1.0, y: oy + 0.1, w: 0.14, h: 0.14, fill: { color: P.steel }, line: { type: "none" } });
+      slide.addText(name, { x: 1.3, y: oy - 0.04, w: 4.9, h: 0.3, fontFace: FONT, fontSize: 13, bold: true, color: P.white, margin: 0 });
+      slide.addText(desc, { x: 1.3, y: oy + 0.28, w: 4.95, h: 0.85, fontFace: FONT, fontSize: 10.5, color: P.ice, margin: 0, lineSpacingMultiple: 1.2 });
+      oy += 1.28;
     }
 
     card(slide, 6.85, colY, 5.88, colH, P.cardAlt, 0.12);
@@ -618,7 +625,8 @@ async function build() {
     const slide = pres.addSlide();
     bgSlide(slide);
     title(slide, "その「一歩」を、どこまで押せばいいのか", {
-      sub: "世話好きな住民の「許可を求める度合い」だけを5段階に変え、各5回ずつ計25回実行した。",
+      sub: "世話好きな住民の「許可を求める度合い」だけを5段階に変え、5水準×各5回＝計25回ぶんを分析した。"
+         + "L1の5回は既存の条件Cを流用しており、新規実行は20回。",
     });
     // この結果はモデル依存だったため、後続スライドでの追試結果とセットで読む必要がある
     slide.addShape("roundRect", {
@@ -963,8 +971,8 @@ async function build() {
     title(slide, "考察：4つの発見");
 
     const findings = [
-      ["FiAlertTriangle", "依存の代償は、危機の前から発生している", "危機の起きないA条件でも救済者依存度は88でB条件（90）とほぼ同じ。壊れるのは危機の瞬間ではなく、運用設計の時点で決まっている。"],
-      ["FiLock", "依存側は結果がぶれなかった", "条件A・Bの標準偏差はほぼ0で5回とも同じ状態に落ちた。一方Cは±20〜26。この範囲では悪い状態のほうがばらつかなかった。"],
+      ["FiAlertTriangle", "高い依存度は危機の前から観測された", "危機の起きないA条件でも救済者依存度は88でB条件（90）とほぼ同じ。少なくともこの条件では、高い依存度は危機発生前から観測された。"],
+      ["FiLock", "依存側は結果がぶれなかった", "条件AのSDは±4.5〜6.7、条件Bは5指標中3指標でSD=0。一方Cは±20〜26で、この範囲では依存側のばらつきが小さかった。"],
       ["FiEyeOff", "「大丈夫です」は安全のサインではなかった", "本人は全フェーズで「大丈夫」と言い続けながら、同じログで水路の詰まりを放置し「見てるだけ」と行動が止まっていた。"],
       ["FiRepeat", "分かれる現象は残り、テコは移らなかった", "村が2つの状態に分かれること自体は別モデルでも観測された。しかし「何を変えれば動くか」は再現せず、モデル依存の可能性が高い。"],
     ];

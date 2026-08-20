@@ -792,7 +792,136 @@ async function build() {
     footer(slide, 14);
   }
 
-  // ---------- Slide 15: 会話ログが語ること ----------
+  // ---------- Slide 15: 中心図 因果の鎖を2段に切る (NEW) ----------
+  {
+    const slide = pres.addSlide();
+    bgSlide(slide);
+    title(slide, "「一人を変えられること」と「集団が変わること」は別だった", {
+      sub: "介入から結果までを途中で切り、2段に分けて測った。",
+      size: 27,
+    });
+
+    // ---- 鎖の図を2行（モデルごと）で描く ----
+    const nodes = ["レベル指定", "キーパーソン", "周囲の住民", "村全体"];
+    // カード(0.6〜12.73)の内側に4ノード+3矢印を必ず収める
+    const laneX = 0.95, laneW = 11.4;
+    const gapX = 1.28;
+    const nodeW = (laneW - gapX * 3) / 4;
+    const nodeH = 0.82;
+    const startX = laneX;
+
+    // 行ごとの (ラベル, A強度pt, B強度pt, 村の効果, 村の色)
+    const lanes = [
+      ["Sonnet 4.5 条件", 11.1, 20.0, "+18.0", P.good],
+      ["Opus 5 条件", 40.3, 4.2, "−1.2", P.danger],
+    ];
+
+    let ly = 2.05;
+    for (let li = 0; li < lanes.length; li++) {
+      const [laneLabel, aVal, bVal, effect, effectColor] = lanes[li];
+      card(slide, 0.6, ly - 0.28, 12.13, 2.0, P.card, 0.12);
+      slide.addText(laneLabel, {
+        x: 0.85, y: ly - 0.18, w: 3.0, h: 0.32, fontFace: FONT, fontSize: 11.5,
+        bold: true, color: P.ice, margin: 0,
+      });
+
+      const ny = ly + 0.42;
+      for (let i = 0; i < nodes.length; i++) {
+        const nx = startX + i * (nodeW + gapX);
+        const isKey = i === 1;
+        const isLast = i === nodes.length - 1;
+        slide.addShape("roundRect", {
+          x: nx, y: ny, w: nodeW, h: nodeH, rectRadius: 0.1,
+          fill: { color: isLast ? P.cardAlt : P.bg },
+          line: { color: isKey ? P.gold : (isLast ? effectColor : P.mutedDark), width: isKey ? 1.5 : 1 },
+        });
+        slide.addText(nodes[i], {
+          x: nx, y: ny, w: nodeW, h: nodeH, fontFace: FONT, fontSize: 12,
+          bold: isKey, color: isKey ? P.goldLight : P.white,
+          align: "center", valign: "middle", margin: 0,
+        });
+        if (isLast) {
+          slide.addText(`自律度 ${effect}`, {
+            x: nx - 0.15, y: ny + nodeH + 0.04, w: nodeW + 0.3, h: 0.32, fontFace: FONT, fontSize: 12,
+            bold: true, color: effectColor, align: "center", margin: 0,
+          });
+        }
+      }
+
+      // ノード間の矢印。(A)(B)は測定値なので太さで強さを表す
+      for (let i = 0; i < nodes.length - 1; i++) {
+        const ax = startX + i * (nodeW + gapX) + nodeW;
+        const ay = ny + nodeH / 2;
+        const measured = i < 2;                  // 0=(A) 1=(B)
+        const val = i === 0 ? aVal : bVal;
+        const strong = measured && val >= 15;
+        const w = measured ? (strong ? 4.5 : 1) : 1.25;
+        const col = measured ? (strong ? P.good : P.mutedDark) : P.muted;
+        slide.addShape("line", {
+          x: ax + 0.12, y: ay, w: gapX - 0.24, h: 0,
+          line: { color: col, width: w, endArrowType: "triangle" },
+        });
+        if (measured) {
+          slide.addText(`${i === 0 ? "(A)" : "(B)"} ${val.toFixed(1)}pt`, {
+            x: ax, y: ay - 0.52, w: gapX, h: 0.3, fontFace: FONT, fontSize: 10,
+            bold: strong, color: col === P.mutedDark ? P.muted : col,
+            align: "center", margin: 0,
+          });
+        }
+      }
+      ly += 2.25;
+    }
+
+    // ---- 結論の一文と、何を測ったかの注記 ----
+    card(slide, 0.6, 6.15, 12.13, 0.72, P.cardAlt, 0.1);
+    slide.addText("村全体を動かしたのは、介入の精度（A）ではなく、周囲への波及（B）だった。", {
+      x: 0.95, y: 6.15, w: 11.5, h: 0.72, fontFace: FONT, fontSize: 14, bold: true,
+      color: P.goldLight, valign: "middle", margin: 0,
+    });
+    slide.addText(
+      "(A) キーパーソン本人の発言が指示どおり変わった幅　／　(B) それに応じて周囲の住民の挙動が変わった幅",
+      { x: 0.6, y: 6.95, w: 12.13, h: 0.3, fontFace: FONT, fontSize: 9.5,
+        color: P.mutedDark, align: "center", margin: 0 }
+    );
+    footer(slide, 15);
+  }
+
+  // ---------- Slide 16: 観測・解釈・仮説を分ける (NEW) ----------
+  {
+    const slide = pres.addSlide();
+    bgSlide(slide);
+    title(slide, "どこまで言えて、どこからが仮説か");
+
+    const tiers = [
+      [P.good, "FiEye", "観測", "Sonnet 4.5条件では、キーパーソン本人への介入の反映は小さかった（+11.1pt）のに、周囲の住民の挙動は大きく変化した（20.0pt）。Opus 5条件では逆に、本人はより指示どおり変化した（+40.3pt）のに、周囲の変化は小さかった（4.2pt）。村全体が動いたのは後者ではなく前者だった。"],
+      [P.gold, "FiSearch", "解釈", "集団を動かしたのは介入の精度ではなく、変化が周囲へ波及するかどうかだった。2条件で波及の大きさが違った背景には、集団内の実効的な結合の強さの違いがあった可能性がある。ただし「結合構造」そのものは測っていない。測ったのは介入条件に対する他住民の波及感度である。"],
+      [P.steel, "FiHelpCircle", "仮説", "キーパーソン介入の有効性は、その人物の能力や介入の精度だけでなく、その人物の行動変容が周囲へどの程度波及する集団なのかに依存するのではないか。検証には、波及の強さが異なる集団を3点以上並べて同一の介入を加える必要がある。"],
+    ];
+
+    let y = 1.75;
+    for (const [color, iconName, label, body] of tiers) {
+      const ch = 1.62;
+      card(slide, 0.6, y, 12.13, ch, P.card, 0.12);
+      await iconCircle(slide, 1.4, y + ch / 2, 0.72, iconName, color, "0B1220", false);
+      slide.addText(label, {
+        x: 2.15, y: y + 0.2, w: 1.6, h: 0.42, fontFace: FONT, fontSize: 15,
+        bold: true, color, margin: 0,
+      });
+      slide.addText(body, {
+        x: 2.15, y: y + 0.66, w: 10.3, h: 0.82, fontFace: FONT, fontSize: 10.5,
+        color: P.ice, margin: 0, lineSpacingMultiple: 1.25,
+      });
+      y += ch + 0.18;
+    }
+
+    slide.addText("観測と解釈と仮説を混ぜないことが、この実験でいちばん気をつけた点です。", {
+      x: 0.6, y: y + 0.06, w: 12.13, h: 0.34, fontFace: FONT, fontSize: 11,
+      italic: true, color: P.muted, align: "center", margin: 0,
+    });
+    footer(slide, 16);
+  }
+
+  // ---------- Slide 17: 会話ログが語ること ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -816,10 +945,10 @@ async function build() {
       });
       y += h + 0.22;
     }
-    footer(slide, 15);
+    footer(slide, 17);
   }
 
-  // ---------- Slide 16: 考察：4つの発見 ----------
+  // ---------- Slide 18: 考察：4つの発見 ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -845,10 +974,10 @@ async function build() {
     slide.addText("※ 各条件5回ずつ計15回の実行。LLMによる採点であり、統計的検定を行うにはまだ試行数が少ない。", {
       x: 0.6, y: y + 0.02, w: 12.13, h: 0.32, fontFace: FONT, fontSize: 10, color: P.mutedDark, align: "center", margin: 0,
     });
-    footer(slide, 16);
+    footer(slide, 18);
   }
 
-  // ---------- Slide 17: 意味から経営への翻訳 ----------
+  // ---------- Slide 19: 意味から経営への翻訳 ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -880,10 +1009,10 @@ async function build() {
     slide.addText("人を支える行為は「美談」ではない。組織の持続可能性と安全保障に直結する。", {
       x: 0.95, y, w: 11.5, h: 0.9, fontFace: FONT, fontSize: 14, bold: true, color: P.white, valign: "middle", margin: 0,
     });
-    footer(slide, 17);
+    footer(slide, 19);
   }
 
-  // ---------- Slide 18: フラクタルな構造 ----------
+  // ---------- Slide 20: フラクタルな構造 ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -914,10 +1043,68 @@ async function build() {
       "小さな共同体における「救済者への依存」と、国家規模における「権力の集中」は構造的に同じである。この実験は、社会全体のレジリエンスを問う試みである。",
       { x: 0.95, y: 5.65, w: 11.5, h: 1.05, fontFace: FONT, fontSize: 13.5, color: P.ice, valign: "middle", margin: 0 }
     );
-    footer(slide, 18);
+    footer(slide, 20);
   }
 
-  // ---------- Slide 19: クロージング ----------
+  // ---------- Slide 21: 救済者×ガバナンスに戻す (NEW) ----------
+  {
+    const slide = pres.addSlide();
+    bgSlide(slide);
+    title(slide, "救済者×ガバナンスに戻すと", {
+      sub: "同じ処方箋が、どの集団にも同じように効くわけではない。",
+    });
+
+    const types = [
+      [P.gold, "FiTarget", "波及が強い集団",
+       "一人を動かすと集団全体が動く",
+       ["救済者への一点集中には構造的な合理性がある",
+        "「誰か一人を育てる／支える」が実際に最も効く打ち手になる",
+        "依存は怠慢ではなく、その集団で合理的だから起きている"]],
+      [P.steel, "FiGitBranch", "判断が独立した集団",
+       "一人を動かしても集団は動かない",
+       ["キーパーソンを立てる施策が通用しない",
+        "複数の参加経路や意思決定の仕組みが要る",
+        "変えるべきは人ではなく、制度と場のほう"]],
+    ];
+
+    const cw = 6.0, gap = 0.53, sx = (W - (cw * 2 + gap)) / 2;
+    for (let i = 0; i < types.length; i++) {
+      const [color, iconName, head, sub, points] = types[i];
+      const x = sx + i * (cw + gap);
+      card(slide, x, 2.0, cw, 3.95, P.card, 0.12);
+      await iconCircle(slide, x + 0.85, 2.7, 0.78, iconName, color, "0B1220", false);
+      slide.addText(head, {
+        x: x + 1.45, y: 2.4, w: cw - 1.7, h: 0.4, fontFace: FONT, fontSize: 15,
+        bold: true, color, margin: 0,
+      });
+      slide.addText(sub, {
+        x: x + 1.45, y: 2.82, w: cw - 1.7, h: 0.34, fontFace: FONT, fontSize: 11.5,
+        color: P.muted, margin: 0,
+      });
+      let py = 3.42;
+      for (const p of points) {
+        slide.addShape("ellipse", {
+          x: x + 0.45, y: py + 0.13, w: 0.14, h: 0.14,
+          fill: { color }, line: { type: "none" },
+        });
+        slide.addText(p, {
+          x: x + 0.75, y: py, w: cw - 1.15, h: 0.72, fontFace: FONT, fontSize: 11.5,
+          color: P.ice, margin: 0, lineSpacingMultiple: 1.25,
+        });
+        py += 0.8;
+      }
+    }
+
+    card(slide, 0.6, 6.2, 12.13, 0.82, P.cardAlt, 0.1);
+    slide.addText(
+      "「救済者に依存するな」「権限を分散せよ」は、集団のタイプを見ないまま打つと、効く集団とまったく効かない集団に分かれる。",
+      { x: 0.95, y: 6.2, w: 11.5, h: 0.82, fontFace: FONT, fontSize: 13.5, bold: true,
+        color: P.goldLight, valign: "middle", margin: 0 }
+    );
+    footer(slide, 21);
+  }
+
+  // ---------- Slide 22: クロージング ----------
   {
     const slide = pres.addSlide();
     bgSlide(slide);
@@ -930,9 +1117,9 @@ async function build() {
     });
 
     const recap = [
-      ["依存は毎回再現された", "A・Bの標準偏差はほぼ0。放っておけば村は必ず依存へ落ちる", P.danger],
-      ["村は2つの状態に分かれる", "連続的には良くならない。別モデルでも24回中23回が両端に落ちた", P.good],
-      ["テコはモデル依存だった", "「何を変えれば動くか」は追試で再現せず。構造は頑健、介入は脆い", P.gold],
+      ["一人は変えられた", "キーパーソン本人は指示どおりに動かせた（+40.3pt）", P.steel],
+      ["でも集団は動かなかった", "周囲への波及は4.2pt。村全体の自律度は−1.2で変わらず", P.danger],
+      ["効くかは集団側で決まる", "介入の精度ではなく、変化が周囲へ伝わるかが分けていた", P.good],
     ];
     let x = (W - (3.8 * 3 + 0.3 * 2)) / 2;
     for (const [big, label, color] of recap) {

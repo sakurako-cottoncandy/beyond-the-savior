@@ -115,7 +115,7 @@ def run_simulation(condition: str, rounds_per_phase: int, mock: bool,
                 )
                 print(f"  [{persona['display_name']}] {text}")
 
-    return transcript
+    return transcript, client.usage
 
 
 def main():
@@ -171,15 +171,26 @@ def main():
         info = AUTONOMY_LEVELS[args.autonomy_level]
         print(f"世話好きな住民の自律性レベル: {args.autonomy_level}（{info['label']}）")
     if args.model:
-        print(f"村人のモデル: {args.model}" + (f"（effort={args.effort}）" if args.effort else ""))
+        print(f"村人のモデル: {args.model}"
+              + (f"（effort={args.effort}）" if args.effort else "（effort=既定）"))
+
+    total_usage = {"input_tokens": 0, "output_tokens": 0, "thinking_tokens": 0, "calls": 0}
 
     for run_index in range(args.start_run, total_runs + 1):
         if args.runs:
             print(f"\n########## 条件{args.condition}{level_tag}{mtag} / {run_index}回目（全{total_runs}回） ##########")
 
-        transcript = run_simulation(
+        transcript, usage = run_simulation(
             args.condition, args.rounds_per_phase, args.mock, level, args.model, args.effort
         )
+        if usage["calls"]:
+            for k in ("input_tokens", "output_tokens", "thinking_tokens", "calls"):
+                total_usage[k] += usage.get(k, 0)
+            print(
+                f"  （この回の消費: 入力{usage['input_tokens']:,} / "
+                f"出力{usage['output_tokens']:,}（うち思考{usage.get('thinking_tokens', 0):,}）"
+                f" トークン、{usage['calls']}回の呼び出し）"
+            )
 
         if args.runs:
             filename = f"log_{args.condition}{level_tag}{mtag}_run{run_index}.json"
@@ -191,6 +202,17 @@ def main():
             json.dump(transcript, f, ensure_ascii=False, indent=2)
 
         print(f"\n条件{args.condition}の会話ログを保存しました: {output_path}")
+
+    # 実測のトークン消費をまとめて表示する（追加実験の予算見積もりに使う）
+    if total_usage["calls"]:
+        n_done = total_usage["calls"]
+        print(
+            f"\n===== 消費実測（{total_runs - args.start_run + 1}回ぶん / 計{n_done}回の呼び出し）=====\n"
+            f"  入力 {total_usage['input_tokens']:,} トークン\n"
+            f"  出力 {total_usage['output_tokens']:,} トークン"
+            f"（うち思考 {total_usage['thinking_tokens']:,} トークン）"
+        )
+        print("  ※ 料金はモデルの単価表と掛け合わせて算出してください")
 
 
 if __name__ == "__main__":

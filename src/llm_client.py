@@ -53,6 +53,10 @@ class LLMClient:
         self.mock = mock or not os.environ.get("ANTHROPIC_API_KEY")
         self.model = model or DEFAULT_MODEL
         self.effort = effort
+        # 実際に使ったトークン数を積み上げる（コストの実測用）
+        # thinking_tokens も記録する。思考が既定でオンのモデルを使うとき、
+        # 実際に思考が発生したかを後から確認できるようにするため
+        self.usage = {"input_tokens": 0, "output_tokens": 0, "thinking_tokens": 0, "calls": 0}
         if not self.mock:
             import anthropic  # 遅延importにして、モックのみ使う場合はパッケージ不要にする
 
@@ -72,6 +76,15 @@ class LLMClient:
             kwargs["output_config"] = {"effort": self.effort}
 
         response = self._client.messages.create(**kwargs)
+
+        usage = getattr(response, "usage", None)
+        if usage is not None:
+            self.usage["input_tokens"] += getattr(usage, "input_tokens", 0) or 0
+            self.usage["output_tokens"] += getattr(usage, "output_tokens", 0) or 0
+            details = getattr(usage, "output_tokens_details", None)
+            if details is not None:
+                self.usage["thinking_tokens"] += getattr(details, "thinking_tokens", 0) or 0
+            self.usage["calls"] += 1
 
         # 安全性フィルタで応答を拒否された場合はテキストが空になるため、その旨を残す
         if getattr(response, "stop_reason", None) == "refusal":

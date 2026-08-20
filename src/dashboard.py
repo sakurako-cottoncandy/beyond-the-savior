@@ -98,6 +98,43 @@ def load_all():
     return logs, scores, aggregates
 
 
+def load_all_transcripts():
+    """data/ にある会話ログをすべて集めて、選びやすいように分類して返す。
+
+    上の load_all() は指標グラフ用に条件A/B/Cだけを読むが、
+    こちらは自律性レベルの振り分けや別モデルでの追試も含めて全部を対象にする。
+    戻り値: {グループ名: [(表示名, ログ本体), ...]}
+    """
+    groups = {}
+
+    def add(group, label, filename):
+        log = load_json(filename)
+        if log:
+            groups.setdefault(group, []).append((label, log))
+
+    # 1. 条件A/B/Cの比較
+    for cond in ("A", "B", "C"):
+        for i in range(1, 21):
+            add("① 条件の比較（A/B/C）", f"{CONDITION_LABELS[cond]}　{i}回目",
+                f"log_{cond}_run{i}.json")
+
+    # 2. 自律性レベルの振り分け（L1は条件Cを流用しているのでそちらを指す）
+    level_labels = {0: "完全依存", 1: "確認するくせ（初期設定）", 2: "小さなことは自分で",
+                    3: "まず住民同士で相談", 4: "自分で判断する"}
+    for lv, name in level_labels.items():
+        for i in range(1, 21):
+            fn = f"log_C_run{i}.json" if lv == 1 else f"log_C_L{lv}_run{i}.json"
+            add("② 自律性レベル別（Sonnet 4.5）", f"L{lv} {name}　{i}回目", fn)
+
+    # 3. 別モデルでの追試
+    for lv in (1, 3, 4):
+        for i in range(1, 21):
+            add("③ 追試（Opus 5・審査役はSonnet 4.5）",
+                f"L{lv} {level_labels[lv]}　{i}回目", f"log_C_L{lv}_opus5_run{i}.json")
+
+    return groups
+
+
 def status_for_load(value):
     if value is None:
         return STATUS_COLORS["warning"], "不明"
@@ -357,29 +394,40 @@ def render_summaries(scores, aggregates=None):
                 st.markdown(f"**{CONDITION_LABELS[cond]}**：{s['summary']}")
 
 
-def render_timeline(logs):
+def render_timeline():
     st.subheader("会話ログ・タイムライン")
 
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        cond = st.selectbox(
-            "条件を選択",
-            options=[c for c in ("A", "B", "C") if logs.get(c)],
-            format_func=lambda c: CONDITION_LABELS[c],
-        )
-    runs = logs.get(cond) or []
-    if not runs:
-        st.caption("この条件のログはまだありません。")
+    groups = load_all_transcripts()
+    if not groups:
+        st.caption("会話ログがまだありません。")
         return
 
+    # L1は条件Cのログを流用しているため、実ファイル数は選択肢の数より少ない
+    import glob as _glob
+    n_files = len(_glob.glob(os.path.join(DATA_DIR, "log_*.json")))
+    st.caption(
+        f"実行した全 {n_files} 本の会話ログから選んで、村人のやり取りを最初から最後まで読めます。"
+        "（自律性レベルL1は条件Cと設定が同じため、同じログを再掲しています）"
+    )
+
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        group = st.selectbox("実験を選択", options=list(groups.keys()), key="timeline_group")
+    entries = groups[group]
     with col2:
-        run_index = st.selectbox(
-            "何回目の実行を見るか",
-            options=list(range(len(runs))),
-            format_func=lambda i: f"{i + 1}回目",
-            key="timeline_run",
+        idx = st.selectbox(
+            "どのログを見るか",
+            options=list(range(len(entries))),
+            format_func=lambda i: entries[i][0],
+            key="timeline_pick",
         )
-    transcript = runs[run_index]
+    transcript = entries[idx][1]
+
+    # 読む前に、この回がどう採点されたかを一言で分かるようにしておく
+    turns = [e for e in transcript if e.get("type") == "turn"]
+    absent = [e for e in turns if e.get("absent")]
+    st.caption(f"この回の発言数: {len(turns) - len(absent)}　／　"
+               f"救済者が応答しなかったターン: {len(absent)}")
 
     for entry in transcript:
         if entry.get("type") == "event":
@@ -402,7 +450,7 @@ def main():
     st.title("救済者 × ガバナンス — シミュレーション・ダッシュボード")
     st.caption("神が降りなくても、村は回るか？ A/B/C 3条件の比較結果")
 
-    logs, scores, aggregates = load_all()
+    _, scores, aggregates = load_all()
 
     if not any(scores.values()):
         st.warning(
@@ -430,7 +478,7 @@ def main():
     st.divider()
     render_summaries(scores, aggregates)
     st.divider()
-    render_timeline(logs)
+    render_timeline()
 
 
 if __name__ == "__main__":
